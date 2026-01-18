@@ -108,7 +108,8 @@ MIT License
 
 ## 👥 Contributors
 
-- Sneha CHV (@chv-sneha)
+- Sneha CHV 
+- M Kishore 
 
 ## 🤝 Contributing
 
