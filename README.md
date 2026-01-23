@@ -39,12 +39,6 @@ src/
 └── types/              # TypeScript types
 ```
 
-## 🔐 Firebase Setup
-
-1. Create a Firebase project at [https://firebase.google.com](https://firebase.google.com)
-2. Enable Authentication (Email/Password)
-3. Create a Firestore database
-4. Add your Firebase config to `.env` file
 
 ## 📦 Available Scripts
 
@@ -54,13 +48,6 @@ npm run build        # Build for production
 npm run preview      # Preview production build
 ```
 
-## 🌐 Deployment
-
-The app can be deployed to:
-- Vercel
-- Netlify
-- Firebase Hosting
-- Any static hosting service
 
 ## 📄 License
 
