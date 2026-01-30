@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Sun, Utensils, Heart, Moon, Clock, Users, ChefHat } from "lucide-react";
+import { ArrowLeft, Sun, Utensils, Heart, Moon, Clock, Users, ChefHat, Play } from "lucide-react";
 
 interface Recipe {
   name: string;
@@ -43,6 +43,57 @@ const HealingMealPlan = ({ condition, onBack }: HealingMealPlanProps) => {
   const [activeTab, setActiveTab] = useState("morning");
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
+
+  const YouTubeEmbed = ({ searchQuery, title }: { searchQuery: string; title: string }) => {
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    
+    useEffect(() => {
+      const handleOnline = () => setIsOnline(true);
+      const handleOffline = () => setIsOnline(false);
+      
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }, []);
+    
+    if (!isOnline) {
+      return (
+        <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+          <div className="text-center text-gray-600">
+            <Play size={32} className="mx-auto mb-2" />
+            <p className="text-sm">Video unavailable offline</p>
+            <p className="text-xs">Connect to internet to watch tutorial</p>
+          </div>
+        </div>
+      );
+    }
+    
+    const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
+    
+    return (
+      <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center bg-red-50 border-2 border-red-200">
+          <div className="text-center">
+            <Play size={32} className="mx-auto mb-2 text-red-600" />
+            <p className="text-sm font-medium mb-2">Watch Recipe Tutorial</p>
+            <a 
+              href={searchUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              <Play size={16} className="mr-2" />
+              Search on YouTube
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   useEffect(() => {
     const fetchMealPlan = async () => {
@@ -277,6 +328,17 @@ const HealingMealPlan = ({ condition, onBack }: HealingMealPlanProps) => {
               {/* Modal Content */}
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
                 <div className="space-y-6">
+                  {/* YouTube Video Section */}
+                  {selectedRecipe.name && (
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <Play size={16} className="text-red-600 mr-2" />
+                        <h3 className="font-semibold text-gray-800">How to Make {selectedRecipe.name}</h3>
+                      </div>
+                      <YouTubeEmbed searchQuery={selectedRecipe.name} title={`How to make ${selectedRecipe.name}`} />
+                    </div>
+                  )}
+                  
                   {/* Recipe Overview */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="bg-blue-50 p-3 rounded-lg text-center">
