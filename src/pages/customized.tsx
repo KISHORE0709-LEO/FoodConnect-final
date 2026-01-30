@@ -565,12 +565,18 @@ export default function Customized() {
       <section className="pt-32 pb-8 px-4 bg-white">
         <div className="max-w-6xl mx-auto space-y-8">
           
-          {/* Back Button */}
-          <div className="mb-6">
+          {/* Back Button and AI Health Forecast */}
+          <div className="mb-6 flex justify-between items-center">
             <Link href="/">
               <Button variant="ghost" className="flex items-center space-x-2">
                 <ArrowLeft size={16} />
                 <span>Back to Home</span>
+              </Button>
+            </Link>
+            <Link href="/ai-health-forecast">
+              <Button className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-blue-500 hover:from-green-700 hover:to-blue-600 text-white">
+                <Activity size={16} />
+                <span>AI Health Forecast</span>
               </Button>
             </Link>
           </div>
