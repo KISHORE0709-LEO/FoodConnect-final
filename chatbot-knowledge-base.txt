@@ -32,6 +32,7 @@ VITE_FIREBASE_STORAGE_BUCKET=foodconnect-dc7ce.firebasestorage.app
 VITE_FIREBASE_MESSAGING_SENDER_ID=329492075093
 VITE_FIREBASE_APP_ID=1:329492075093:web:54611482890b31991cbadc
 VITE_FIREBASE_MEASUREMENT_ID=G-0R0ENB70W6
+VITE_GEMINI_API_KEY=AIzaSyDiHYHgp71hHz-kJlbT9ayIoGlS9Iqs884
 
 === TECHNICAL STACK ===
 Q: What technologies does FoodConnect use?
@@ -57,13 +58,19 @@ Q: How do grocery lists work?
 A: Generate smart shopping lists automatically from your meal plans and dietary requirements.
 
 Q: How to find recipes for PCOS?
-A: Go to the meal planning section and select PCOS as your health condition. FoodConnect will provide personalized PCOS-friendly recipes based on your dietary needs.
+A: Go to the home page and click on "Healing Recipes" feature card, or navigate directly to /healing-recipes. Select PCOS from the condition list to get personalized PCOS-friendly recipes and meal plans.
 
 Q: How to find recipes for diabetes?
-A: Navigate to meal planning, set diabetes as your health condition, and get customized diabetic-friendly meal recommendations.
+A: Go to the home page and click on "Healing Recipes" feature card, or navigate directly to /healing-recipes. Select diabetes from the condition list to get customized diabetic-friendly meal recommendations.
 
 Q: How to find recipes for thyroid?
-A: Use the meal planning feature and specify thyroid condition to receive thyroid-specific recipes and meal plans.
+A: Go to the home page and click on "Healing Recipes" feature card, or navigate directly to /healing-recipes. Select thyroid from the condition list to receive thyroid-specific recipes and meal plans.
+
+Q: Where can I find healing recipes?
+A: You can find healing recipes by clicking the "Healing Recipes" card on the home page or by going directly to /healing-recipes. This feature provides curated recipes for PCOD, diabetes, thyroid, anemia and more.
+
+Q: What conditions are supported in healing recipes?
+A: The healing recipes feature supports PCOD/PCOS, diabetes, thyroid, anemia, and other health conditions with specialized meal plans and recipes.
 
 Q: What is FoodConnect?
 A: FoodConnect is a food analysis and nutrition tracking app that helps you make healthier food choices with personalized allergen detection and AI-powered diet recommendations.
@@ -82,6 +89,12 @@ A: Complete your health profile with conditions like PCOS, diabetes, or thyroid,
 
 Q: What makes FoodConnect different?
 A: FoodConnect offers personalized allergen detection, condition-specific recipes, and AI-powered recommendations based on your unique health profile.
+
+Q: What are the main features of FoodConnect?
+A: FoodConnect offers AI Meal Budget Planner, Healing Recipes for health conditions, AI Health Forecast, Food Safety & Consumer Rights, Generic Analysis, and Customized Analysis.
+
+Q: How do I access different features?
+A: From the home page, you can click on feature cards like "Healing Recipes", "AI Meal Budget Planner", "AI Health Forecast", or use the navigation menu for analysis options.
 
 === USER ACCOUNT ===
 Q: How do I create an account?

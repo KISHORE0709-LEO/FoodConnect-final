@@ -3,7 +3,7 @@ import Spline from '@splinetool/react-spline';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { searchKnowledgeBase } from '@/lib/knowledgeBase';
+import { getGeminiResponse } from '@/lib/geminiService';
 
 export function SplineChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,16 +12,18 @@ export function SplineChatbot() {
   ]);
   const [input, setInput] = useState('');
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
     
     setMessages(prev => [...prev, { role: 'user', content: input }]);
     
-    // Get response from knowledge base
-    setTimeout(() => {
-      const response = searchKnowledgeBase(input);
+    // Get response from Gemini AI
+    try {
+      const response = await getGeminiResponse(input);
       setMessages(prev => [...prev, { role: 'bot', content: response }]);
-    }, 1000);
+    } catch (error) {
+      setMessages(prev => [...prev, { role: 'bot', content: 'Sorry, I encountered an error. Please try again.' }]);
+    }
     
     setInput('');
   };
