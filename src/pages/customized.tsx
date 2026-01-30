@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BottomNavigation } from '@/components/navigation';
 import { ModernNavbar } from '@/components/ModernNavbar';
+import PersonalizedRiskAnalysis from '@/components/PersonalizedRiskAnalysis';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +25,15 @@ interface PersonData {
 }
 
 export default function Customized() {
+  // Check if we should show personalized risk analysis
+  const storedData = localStorage.getItem('lastScannedFood');
+  const [showRiskAnalysis, setShowRiskAnalysis] = useState(!!storedData);
+  
+  // If we have scanned data, show risk analysis first
+  if (showRiskAnalysis && storedData) {
+    return <PersonalizedRiskAnalysis />;
+  }
+  
   const [activeTab, setActiveTab] = useState('automatic');
   const [formData, setFormData] = useState<PersonData>({
     age: 25,

@@ -12,7 +12,7 @@ import pytesseract
 import re
 import numpy as np
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = '/usr/local/bin/tesseract'
 from OCR import get_text
 
 def parse_with_validation(raw_text):
@@ -154,5 +154,5 @@ def calculate_safety_score(result):
     return score
 
 if __name__ == '__main__':
-    print('Starting OCR API on http://localhost:5000')
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print('Starting OCR API on http://localhost:5001')
+    app.run(debug=True, host='0.0.0.0', port=5001)

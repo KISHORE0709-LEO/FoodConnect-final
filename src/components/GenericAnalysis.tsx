@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, Loader2, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Camera, Upload, Loader2, AlertTriangle, CheckCircle, XCircle, UserCheck } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 interface AnalysisResult {
   success: boolean;
@@ -49,11 +50,13 @@ interface AnalysisResult {
 }
 
 export default function GenericAnalysis() {
+  const [, setLocation] = useLocation();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showCustomizeButton, setShowCustomizeButton] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
@@ -89,6 +92,13 @@ export default function GenericAnalysis() {
 
       if (data.success) {
         setResult(data);
+        setShowCustomizeButton(true);
+        // Store the analysis data for customized analysis
+        localStorage.setItem('lastScannedFood', JSON.stringify({
+          ...data,
+          imageUrl: previewUrl,
+          scannedAt: new Date().toISOString()
+        }));
       } else {
         setError(data.error || 'Analysis failed');
       }
@@ -97,6 +107,10 @@ export default function GenericAnalysis() {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleCustomizeAnalysis = () => {
+    setLocation('/customized');
   };
 
   const getRiskColor = (score: number) => {
@@ -127,13 +141,29 @@ export default function GenericAnalysis() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Generic Food Analysis
-        </h1>
-        <p className="text-gray-600">
-          Scan any food label to get instant safety analysis and health insights
-        </p>
+      {/* Header with Customize Button */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="text-center flex-1">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Generic Food Analysis
+          </h1>
+          <p className="text-gray-600">
+            Scan any food label to get instant safety analysis and health insights
+          </p>
+        </div>
+        
+        {/* Customize Button - Top Right */}
+        {showCustomizeButton && (
+          <div className="ml-4">
+            <button
+              onClick={handleCustomizeAnalysis}
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 whitespace-nowrap"
+            >
+              <UserCheck className="w-5 h-5" />
+              <span className="font-medium">View Personalized Risk Report</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Upload Section */}
@@ -212,6 +242,16 @@ export default function GenericAnalysis() {
       {/* Results Display */}
       {result && (
         <div className="space-y-6">
+          {/* Additional Customize Button in Results */}
+          <div className="text-center mb-6">
+            <button
+              onClick={handleCustomizeAnalysis}
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              <UserCheck className="w-5 h-5" />
+              <span className="font-medium">View Personalized Risk Report</span>
+            </button>
+          </div>
           {/* Product Information */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Product Information</h2>

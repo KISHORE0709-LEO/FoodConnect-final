@@ -28,16 +28,6 @@ tmp/
 temp/
 cache/
 
-# Large files and datasets (>50MB)
-# OCR model files
-OCR/east/frozen_east_text_detection.pb
-
-# Machine learning models and pickle files
-*.pb
-*.pkl
-*.h5
-*.model
-
 # Backup files
 *.bak
 *.backup
