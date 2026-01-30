@@ -57,7 +57,10 @@ export default function GenericAnalysis() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showCustomizeButton, setShowCustomizeButton] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
@@ -73,6 +76,49 @@ export default function GenericAnalysis() {
     }
   };
 
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      setShowCamera(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      setError('Camera access denied or not available');
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      const context = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      context?.drawImage(video, 0, 0);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+          handleFileSelect(file);
+          stopCamera();
+        }
+      }, 'image/jpeg', 0.8);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setShowCamera(false);
+  };
+
   const analyzeImage = async () => {
     if (!selectedFile) return;
 
@@ -83,7 +129,7 @@ export default function GenericAnalysis() {
       const formData = new FormData();
       formData.append('image', selectedFile);
 
-      const response = await fetch('/api/analyze/generic', {
+      const response = await fetch('http://localhost:5002/api/generic/analyze', {
         method: 'POST',
         body: formData,
       });
@@ -153,60 +199,101 @@ export default function GenericAnalysis() {
 
       {/* Upload Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-          {previewUrl ? (
-            <div className="space-y-4">
-              <img
-                src={previewUrl}
-                alt="Selected food label"
-                className="max-h-64 mx-auto rounded-lg shadow-md"
-              />
-              <div className="flex justify-center space-x-4">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                >
-                  Choose Different Image
-                </button>
-                <button
-                  onClick={analyzeImage}
-                  disabled={isAnalyzing}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Analyzing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="w-4 h-4" />
-                      <span>Analyze Food Label</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <Upload className="w-16 h-16 text-gray-400 mx-auto" />
-              <div>
-                <h3 className="text-lg font-medium text-gray-900">
-                  Upload Food Label Image
-                </h3>
-                <p className="text-gray-500">
-                  Take a photo or upload an image of the ingredient label
-                </p>
-              </div>
+        {showCamera ? (
+          <div className="space-y-4">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="w-full max-h-64 rounded-lg"
+            />
+            <canvas ref={canvasRef} className="hidden" />
+            <div className="flex justify-center space-x-4">
               <button
-                onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                onClick={capturePhoto}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2"
               >
-                Choose Image
+                <Camera className="w-4 h-4" />
+                <span>Capture Photo</span>
+              </button>
+              <button
+                onClick={stopCamera}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              >
+                Cancel
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            {previewUrl ? (
+              <div className="space-y-4">
+                <img
+                  src={previewUrl}
+                  alt="Selected food label"
+                  className="max-h-64 mx-auto rounded-lg shadow-md"
+                />
+                <div className="flex justify-center space-x-4">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                  >
+                    Choose Different Image
+                  </button>
+                  <button
+                    onClick={startCamera}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center space-x-2"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Use Camera</span>
+                  </button>
+                  <button
+                    onClick={analyzeImage}
+                    disabled={isAnalyzing}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Analyzing...</span>
+                      </>
+                    ) : (
+                      <span>Analyze Label</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <Upload className="w-16 h-16 text-gray-400 mx-auto" />
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Upload Food Label Image
+                  </h3>
+                  <p className="text-gray-500">
+                    Take a photo or upload an image of the ingredient label
+                  </p>
+                </div>
+                <div className="flex justify-center space-x-4">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center space-x-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>Choose Image</span>
+                  </button>
+                  <button
+                    onClick={startCamera}
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center space-x-2"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Take Photo</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         <input
           ref={fileInputRef}
           type="file"

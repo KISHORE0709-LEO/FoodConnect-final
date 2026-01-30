@@ -72,7 +72,7 @@ export function EnhancedGenericScanner() {
 
       setCurrentStep('Enhanced OCR processing...');
       
-      const response = await fetch(`/api/generic/analyze?type=${analysisType}`, {
+      const response = await fetch(`http://localhost:5002/api/generic/analyze?type=${analysisType}`, {
         method: 'POST',
         body: formData,
       });
