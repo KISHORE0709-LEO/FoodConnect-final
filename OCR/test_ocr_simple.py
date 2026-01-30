@@ -338,105 +338,115 @@ def parse_with_validation(raw_text):
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/api/analyze/generic', methods=['POST'])
 @app.route('/api/generic/analyze', methods=['POST'])
 def analyze():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image provided'}), 400
-    
-    file = request.files['image']
-    img_bytes = file.read()
-    nparr = np.frombuffer(img_bytes, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    
-    if img is None:
-        return jsonify({'error': 'Could not read image'}), 400
-    
-    # OCR extraction
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    
-    texts = [
-        pytesseract.image_to_string(gray, lang='eng'),
-        pytesseract.image_to_string(thresh, lang='eng'),
-        get_text(img),
-        pytesseract.image_to_string(gray, lang='eng', config='--psm 6'),
-        pytesseract.image_to_string(gray, lang='eng', config='--psm 11')
-    ]
-    
-    raw_text = "\n".join(set(t for t in texts if len(t) > 50))
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image provided'}), 400
 
-    result = parse_with_validation(raw_text)
+        file = request.files['image']
+        img_bytes = file.read()
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # Ensure salt/iodised salt is present in ingredientAnalysis (extra safety fallback)
-    if result.get('ingredients'):
-        ing_lower = [i.lower() for i in result['ingredients']]
-        if not any('salt' in s for s in ing_lower):
-            m = re.search(r'([a-z]{0,15}\s*(?:lodised|lodized|iodised|iodized|iodise|iodize)?\s*salt)\b', raw_text, flags=re.IGNORECASE)
-            if m:
-                candidate = capitalize_ingredient(normalize_ingredient(m.group(1).strip()))
-                if candidate not in result['ingredients']:
-                    result['ingredients'].append(candidate)
-    
-    # Add FSSAI detection
-    result['fssai'] = detect_fssai(raw_text)
-    
-    # Add safety score
-    result['safety_score'] = calculate_safety_score(result)
-    
-    # Format for frontend
-    formatted_result = {
-        'success': True,
-        'productName': 'Food Product',
-        'ingredientAnalysis': [{
-            'ingredient': ing,
-            'name': ing,
-            'category': 'ingredient',
-            'risk': 'low',
-            'description': '',
-            'toxicity_score': 20
-        } for ing in result.get('ingredients', [])],
-        'nutriScore': {
-            'grade': 'B',
-            'score': result['safety_score'],
-            'color': 'green'
-        },
-        'nutrition': {
-            'healthScore': result['safety_score'],
-            'safetyLevel': 'Safe',
-            'totalIngredients': len(result.get('ingredients', [])),
-            'toxicIngredients': 0,
-            'per100g': {
-                'energy_kcal': result['nutrition_facts'].get('energy_kcal'),
-                'protein_g': result['nutrition_facts'].get('protein_g'),
-                'carbohydrate_g': result['nutrition_facts'].get('carbohydrate_g'),
-                'total_sugar_g': result['nutrition_facts'].get('total_sugar_g'),
-                'added_sugar_g': result['nutrition_facts'].get('added_sugar_g'),
-                'sugar_g': result['nutrition_facts'].get('sugar_g'),
-                'total_fat_g': result['nutrition_facts'].get('total_fat_g'),
-                'saturated_fat_g': result['nutrition_facts'].get('saturated_fat_g'),
-                'trans_fat_g': result['nutrition_facts'].get('trans_fat_g'),
-                'sodium_mg': result['nutrition_facts'].get('sodium_mg')
-            }
-        },
-        # Friendly display map with exact keys the frontend expects
-        'per100g_display': {
-            'Energy (kcal)': result['nutrition_facts'].get('energy_kcal'),
-            'Protein (g)': result['nutrition_facts'].get('protein_g'),
-            'Carbohydrate (g)': result['nutrition_facts'].get('carbohydrate_g'),
-            'Total Sugars (g)': result['nutrition_facts'].get('total_sugar_g'),
-            'Added Sugars (g)': result['nutrition_facts'].get('added_sugar_g'),
-            'Total Fat (g)': result['nutrition_facts'].get('total_fat_g'),
-            'Saturated Fat (g)': result['nutrition_facts'].get('saturated_fat_g'),
-            'Trans Fat (g)': result['nutrition_facts'].get('trans_fat_g'),
-            'Sodium (mg)': result['nutrition_facts'].get('sodium_mg')
-        },
-        'recommendations': generate_recommendations(result),
-        'fssai': result['fssai'],
-        'summary': 'Analysis complete',
-        'ocrData': result
-    }
-    
-    return jsonify(formatted_result)
+        if img is None:
+            return jsonify({'error': 'Could not read image'}), 400
+
+        # OCR extraction
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+        texts = [
+            pytesseract.image_to_string(gray, lang='eng'),
+            pytesseract.image_to_string(thresh, lang='eng'),
+            get_text(img),
+            pytesseract.image_to_string(gray, lang='eng', config='--psm 6'),
+            pytesseract.image_to_string(gray, lang='eng', config='--psm 11')
+        ]
+
+        raw_text = "\n".join(set(t for t in texts if len(t) > 50))
+
+        # debug: small log
+        print(f"[OCR] raw_text length: {len(raw_text)}")
+
+        result = parse_with_validation(raw_text)
+
+        # Ensure salt/iodised salt is present in ingredientAnalysis (extra safety fallback)
+        if result.get('ingredients'):
+            ing_lower = [i.lower() for i in result['ingredients']]
+            if not any('salt' in s for s in ing_lower):
+                m = re.search(r'([a-z]{0,15}\s*(?:lodised|lodized|iodised|iodized|iodise|iodize)?\s*salt)\b', raw_text, flags=re.IGNORECASE)
+                if m:
+                    candidate = capitalize_ingredient(normalize_ingredient(m.group(1).strip()))
+                    if candidate not in result['ingredients']:
+                        result['ingredients'].append(candidate)
+
+        # Add FSSAI detection
+        result['fssai'] = detect_fssai(raw_text)
+
+        # Add safety score
+        result['safety_score'] = calculate_safety_score(result)
+
+        # Format for frontend
+        formatted_result = {
+            'success': True,
+            'productName': 'Food Product',
+            'ingredientAnalysis': [{
+                'ingredient': ing,
+                'name': ing,
+                'category': 'ingredient',
+                'risk': 'low',
+                'description': '',
+                'toxicity_score': 20
+            } for ing in result.get('ingredients', [])],
+            'nutriScore': {
+                'grade': 'B',
+                'score': result['safety_score'],
+                'color': 'green'
+            },
+            'nutrition': {
+                'healthScore': result['safety_score'],
+                'safetyLevel': 'Safe',
+                'totalIngredients': len(result.get('ingredients', [])),
+                'toxicIngredients': 0,
+                'per100g': {
+                    'energy_kcal': result['nutrition_facts'].get('energy_kcal'),
+                    'protein_g': result['nutrition_facts'].get('protein_g'),
+                    'carbohydrate_g': result['nutrition_facts'].get('carbohydrate_g'),
+                    'total_sugar_g': result['nutrition_facts'].get('total_sugar_g'),
+                    'added_sugar_g': result['nutrition_facts'].get('added_sugar_g'),
+                    'sugar_g': result['nutrition_facts'].get('sugar_g'),
+                    'total_fat_g': result['nutrition_facts'].get('total_fat_g'),
+                    'saturated_fat_g': result['nutrition_facts'].get('saturated_fat_g'),
+                    'trans_fat_g': result['nutrition_facts'].get('trans_fat_g'),
+                    'sodium_mg': result['nutrition_facts'].get('sodium_mg')
+                }
+            },
+            # Friendly display map with exact keys the frontend expects
+            'per100g_display': {
+                'Energy (kcal)': result['nutrition_facts'].get('energy_kcal'),
+                'Protein (g)': result['nutrition_facts'].get('protein_g'),
+                'Carbohydrate (g)': result['nutrition_facts'].get('carbohydrate_g'),
+                'Total Sugars (g)': result['nutrition_facts'].get('total_sugar_g'),
+                'Added Sugars (g)': result['nutrition_facts'].get('added_sugar_g'),
+                'Total Fat (g)': result['nutrition_facts'].get('total_fat_g'),
+                'Saturated Fat (g)': result['nutrition_facts'].get('saturated_fat_g'),
+                'Trans Fat (g)': result['nutrition_facts'].get('trans_fat_g'),
+                'Sodium (mg)': result['nutrition_facts'].get('sodium_mg')
+            },
+            'recommendations': generate_recommendations(result),
+            'fssai': result['fssai'],
+            'summary': 'Analysis complete',
+            'ocrData': result
+        }
+
+        return jsonify(formatted_result)
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        print('[OCR ERROR]', tb)
+        return jsonify({'success': False, 'error': str(e), 'traceback': tb}), 500
 def detect_fssai(raw_text):
     text = raw_text.lower()
     compact = re.sub(r'[^a-z0-9]', '', text)

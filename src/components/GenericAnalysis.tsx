@@ -140,16 +140,21 @@ export default function GenericAnalysis() {
         setResult(data);
         setShowCustomizeButton(true);
         // Store the analysis data for customized analysis
-        localStorage.setItem('lastScannedFood', JSON.stringify({
+        const analysisData = {
           ...data,
           imageUrl: previewUrl,
           scannedAt: new Date().toISOString()
-        }));
+        };
+        localStorage.setItem('lastScannedFood', JSON.stringify(analysisData));
+        
+        // Trigger storage event for other components to update
+        window.dispatchEvent(new Event('storage'));
       } else {
         setError(data.error || 'Analysis failed');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Analysis error:', err);
+      setError('Analysis failed. Please ensure the OCR service is running: python test_ocr_simple.py');
     } finally {
       setIsAnalyzing(false);
     }
@@ -361,8 +366,20 @@ export default function GenericAnalysis() {
                   <p className="text-lg font-bold text-red-900">{result.nutrition.per100g.sodium_mg || 'N/A'}mg</p>
                 </div>
                 <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-purple-800 mb-1">Added Sugars</h3>
-                  <p className="text-lg font-bold text-purple-900">{result.nutrition.per100g.sugar_g !== null ? result.nutrition.per100g.sugar_g : 'N/A'}g</p>
+                  <h3 className="text-sm font-medium text-purple-800 mb-1">Total Sugars</h3>
+                  <p className="text-lg font-bold text-purple-900">{result.nutrition.per100g.total_sugar_g ?? result.nutrition.per100g.sugar_g ?? 'N/A'}g</p>
+                </div>
+                <div className="bg-indigo-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-indigo-800 mb-1">Added Sugars</h3>
+                  <p className="text-lg font-bold text-indigo-900">{result.nutrition.per100g.added_sugar_g ?? 'N/A'}g</p>
+                </div>
+                <div className="bg-teal-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-teal-800 mb-1">Fiber</h3>
+                  <p className="text-lg font-bold text-teal-900">{result.nutrition.per100g.fiber_g ?? 'N/A'}g</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-gray-800 mb-1">Cholesterol</h3>
+                  <p className="text-lg font-bold text-gray-900">{result.nutrition.per100g.cholesterol_mg ?? 'N/A'}mg</p>
                 </div>
               </div>
             </div>

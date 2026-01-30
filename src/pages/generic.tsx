@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Wifi, WifiOff, UserCheck } from 'lucide-react';
 import { Link } from 'wouter';
 import { useOffline } from '@/hooks/useOffline';
+import { useEffect, useState } from 'react';
 
 export default function Generic() {
   const isOffline = useOffline();
@@ -41,14 +42,8 @@ export default function Generic() {
             </Link>
             
             {/* Customize Button - Top Right */}
-            {localStorage.getItem('lastScannedFood') && (
-              <Button 
-                onClick={() => window.location.href = '/customized?from=generic'}
-                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                <UserCheck className="w-5 h-5" />
-                <span className="font-medium">View Customized Risk Report</span>
-              </Button>
+            {typeof window !== 'undefined' && (
+              <CustomizeButton />
             )}
           </div>
 
@@ -58,5 +53,54 @@ export default function Generic() {
 
       <BottomNavigation />
     </div>
+  );
+}
+
+function CustomizeButton() {
+  const [hasLast, setHasLast] = useState(false);
+
+  useEffect(() => {
+    const checkData = () => {
+      try {
+        const raw = localStorage.getItem('lastScannedFood');
+        if (!raw) {
+          setHasLast(false);
+          return;
+        }
+        const parsed = JSON.parse(raw);
+        // More strict validation - must have actual analysis data
+        const hasValidAnalysis = parsed && 
+          parsed.success === true && 
+          (parsed.ingredientAnalysis?.length > 0 || 
+           parsed.nutrition?.per100g || 
+           parsed.ocrData?.nutrition_facts);
+        setHasLast(!!hasValidAnalysis);
+      } catch (e) {
+        setHasLast(false);
+      }
+    };
+    
+    checkData();
+    // Listen for storage changes to update button visibility
+    window.addEventListener('storage', checkData);
+    // Also check periodically in case data was updated in same tab
+    const interval = setInterval(checkData, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', checkData);
+      clearInterval(interval);
+    };
+  }, []);
+
+  if (!hasLast) return null;
+
+  return (
+    <Button 
+      onClick={() => window.location.href = '/customized?from=generic'}
+      className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+    >
+      <UserCheck className="w-5 h-5" />
+      <span className="font-medium">View Customized Risk Report</span>
+    </Button>
   );
 }

@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useUserProfile } from '@/context/UserProfileContext';
 import { ArrowLeft, AlertTriangle, Shield, Heart, Brain, CheckCircle, XCircle, AlertCircle, ShoppingCart, RotateCcw, BarChart3, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,93 +29,169 @@ export default function PersonalizedRiskAnalysis() {
   const [, setLocation] = useLocation();
   const [scannedData, setScannedData] = useState<any>(null);
   const [healthProfile, setHealthProfile] = useState<HealthProfile>({
-    allergies: ['ghee', 'peanut', 'dairy'],
-    healthConditions: ['diabetes', 'high cholesterol'],
-    dietaryRestrictions: ['low sodium', 'low sugar']
+    allergies: [],
+    healthConditions: [],
+    dietaryRestrictions: []
   });
   const [riskAnalysis, setRiskAnalysis] = useState<PersonalizedRisk[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiRecommendations, setAiRecommendations] = useState<string>('');
   const [showDetailedModal, setShowDetailedModal] = useState(false);
 
+  const { user } = useAuth();
+  const { userProfile } = useUserProfile();
+
   useEffect(() => {
-    // Load scanned food data from localStorage
-    const storedData = localStorage.getItem('lastScannedFood');
-    if (storedData) {
-      const data = JSON.parse(storedData);
-      setScannedData(data);
-      analyzePersonalizedRisks(data);
+    // Load and validate scanned food data from localStorage
+    const raw = localStorage.getItem('lastScannedFood');
+    console.log('Raw scanned data:', raw); // Debug log
+    console.log('Current localStorage keys:', Object.keys(localStorage)); // Debug log
+    
+    let validStored: any = null;
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        console.log('Parsed scanned data:', parsed); // Debug log
+        
+        const hasValidAnalysis = parsed && 
+          parsed.success === true && 
+          (parsed.ingredientAnalysis?.length > 0 || 
+           parsed.nutrition?.per100g || 
+           parsed.ocrData?.nutrition_facts);
+           
+        console.log('Has valid analysis:', hasValidAnalysis); // Debug log
+        if (hasValidAnalysis) validStored = parsed;
+      } catch (e) {
+        console.error('Error parsing scanned data:', e);
+        validStored = null;
+      }
+    }
+
+    if (validStored) {
+      console.log('Setting scanned data:', validStored); // Debug log
+      setScannedData(validStored);
+    }
+
+    // Use user profile data with proper fallbacks
+    let profileData: HealthProfile = {
+      allergies: [],
+      healthConditions: [],
+      dietaryRestrictions: []
+    };
+
+    if (userProfile) {
+      profileData = {
+        allergies: [
+          ...(userProfile.allergies || []),
+          ...(userProfile.additionalAllergens || []),
+          ...(userProfile.dislikedIngredients || [])
+        ].filter(Boolean),
+        healthConditions: (userProfile.healthConditions || []).filter(Boolean),
+        dietaryRestrictions: userProfile.dietaryPreferences ? [userProfile.dietaryPreferences] : []
+      };
+      console.log('Using userProfile data:', profileData); // Debug log
+    } else if (user) {
+      profileData = {
+        allergies: (user.allergies || []).filter(Boolean),
+        healthConditions: (user.healthConditions || []).filter(Boolean),
+        dietaryRestrictions: user.dietaryPreferences ? [user.dietaryPreferences] : []
+      };
+      console.log('Using user data:', profileData); // Debug log
     } else {
+      console.log('No user profile found, using empty profile'); // Debug log
+    }
+    
+    setHealthProfile(profileData);
+
+    // Trigger analysis only when we have valid scan data
+    if (validStored) {
+      console.log('Starting analysis with data:', validStored, 'and profile:', profileData); // Debug log
+      analyzePersonalizedRisks(validStored);
+    } else {
+      console.log('No valid scanned data found'); // Debug log
       setLoading(false);
     }
-  }, []);
+  }, [user, userProfile]);
 
   const analyzePersonalizedRisks = async (foodData: any) => {
     setLoading(true);
     const risks: PersonalizedRisk[] = [];
 
-    // Check for allergies (Critical Risk)
-    if (foodData.ingredientAnalysis) {
-      const allergenMatches = foodData.ingredientAnalysis.filter((ingredient: any) =>
-        healthProfile.allergies.some(allergy => 
-          ingredient.name.toLowerCase().includes(allergy.toLowerCase()) ||
-          ingredient.ingredient.toLowerCase().includes(allergy.toLowerCase())
-        )
-      );
+    // Extract ingredients from actual scanned data
+    const ingredientNames: string[] = [];
+    if (foodData.ingredientAnalysis && Array.isArray(foodData.ingredientAnalysis)) {
+      for (const ing of foodData.ingredientAnalysis) {
+        const name = (ing.name || ing.ingredient || '').toString().toLowerCase();
+        if (name) ingredientNames.push(name);
+      }
+    }
 
-      allergenMatches.forEach((match: any) => {
-        const allergen = healthProfile.allergies.find(allergy => 
-          match.name.toLowerCase().includes(allergy.toLowerCase()) ||
-          match.ingredient.toLowerCase().includes(allergy.toLowerCase())
-        );
-        
-        risks.push({
-          level: 'danger',
-          title: `🚨 CRITICAL ALLERGY ALERT`,
-          message: `This product contains ${allergen?.toUpperCase()}. You are allergic to ${allergen}.`,
-          recommendation: `DO NOT CONSUME. This could trigger severe allergic reactions including digestive issues, skin reactions, or respiratory problems.`
-        });
+    // Check for allergen matches using actual user profile
+    const foundAllergens = new Set<string>();
+    for (const allergyRaw of healthProfile.allergies || []) {
+      const allergy = allergyRaw.toLowerCase().trim();
+      if (!allergy) continue;
+
+      for (const ing of ingredientNames) {
+        if (ing.includes(allergy) || allergy.includes(ing)) {
+          foundAllergens.add(allergyRaw);
+        }
+      }
+    }
+
+    // Add critical allergen risks
+    for (const allergen of Array.from(foundAllergens)) {
+      risks.push({
+        level: 'danger',
+        title: `🚨 CRITICAL ALLERGY ALERT`,
+        message: `This product contains ${allergen}. You have a matching allergy in your profile.`,
+        recommendation: `DO NOT CONSUME. Even small amounts may trigger severe allergic reactions.`
       });
     }
 
-    // Check for health condition conflicts (Warning Risk)
-    if (foodData.nutrition?.per100g) {
-      const nutrition = foodData.nutrition.per100g;
+    // Use actual nutrition data from scan
+    const nutrition = foodData.nutrition?.per100g || foodData.per100g_display || {};
+    const getNum = (key: string) => {
+      const val = nutrition[key] || nutrition[key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())];
+      return val ? parseFloat(val.toString()) : null;
+    };
+
+    const sugar = getNum('total_sugar_g') || getNum('sugar_g') || getNum('Total Sugars (g)');
+    const sodium = getNum('sodium_mg') || getNum('Sodium (mg)');
+    const totalFat = getNum('total_fat_g') || getNum('Total Fat (g)');
+    const satFat = getNum('saturated_fat_g') || getNum('Saturated Fat (g)');
+
+    // Check health condition conflicts using actual user conditions
+    for (const condition of healthProfile.healthConditions || []) {
+      const conditionLower = condition.toLowerCase();
       
-      // Diabetes check
-      if (healthProfile.healthConditions.includes('diabetes')) {
-        if (nutrition.sugar_g && nutrition.sugar_g > 10) {
-          risks.push({
-            level: 'warning',
-            title: '⚠️ DIABETES WARNING',
-            message: `High sugar content (${nutrition.sugar_g}g per 100g) detected.`,
-            recommendation: `This product may cause blood sugar spikes. Limit consumption or avoid if managing diabetes strictly.`
-          });
-        }
+      if (conditionLower.includes('diabetes') && sugar && sugar > 10) {
+        risks.push({
+          level: 'warning',
+          title: '⚠️ DIABETES WARNING',
+          message: `High sugar content (${sugar}g per 100g) detected. This may affect your blood glucose levels.`,
+          recommendation: `Consider limiting portion size and monitor blood sugar levels after consumption.`
+        });
       }
-
-      // High cholesterol check
-      if (healthProfile.healthConditions.includes('high cholesterol')) {
-        if (nutrition.total_fat_g && nutrition.total_fat_g > 15) {
-          risks.push({
-            level: 'warning',
-            title: '⚠️ CHOLESTEROL WARNING',
-            message: `High fat content (${nutrition.total_fat_g}g per 100g) detected.`,
-            recommendation: `High fat foods may worsen cholesterol levels. Consider limiting portion size or choosing lower-fat alternatives.`
-          });
-        }
+      
+      if ((conditionLower.includes('cholesterol') || conditionLower.includes('heart')) && 
+          ((satFat && satFat > 5) || (totalFat && totalFat > 15))) {
+        risks.push({
+          level: 'warning',
+          title: '⚠️ HEART HEALTH WARNING',
+          message: `High fat content detected (Total: ${totalFat || 'N/A'}g, Saturated: ${satFat || 'N/A'}g per 100g).`,
+          recommendation: `This may impact your cholesterol levels. Consider choosing lower-fat alternatives.`
+        });
       }
-
-      // Low sodium restriction
-      if (healthProfile.dietaryRestrictions.includes('low sodium')) {
-        if (nutrition.sodium_mg && nutrition.sodium_mg > 400) {
-          risks.push({
-            level: 'warning',
-            title: '⚠️ HIGH SODIUM WARNING',
-            message: `High sodium content (${nutrition.sodium_mg}mg per 100g) detected.`,
-            recommendation: `This exceeds recommended daily sodium intake. May contribute to high blood pressure and heart issues.`
-          });
-        }
+      
+      if ((conditionLower.includes('hypertension') || conditionLower.includes('blood pressure')) && 
+          sodium && sodium > 400) {
+        risks.push({
+          level: 'warning',
+          title: '⚠️ HIGH BLOOD PRESSURE WARNING',
+          message: `High sodium content (${sodium}mg per 100g) detected.`,
+          recommendation: `This may raise your blood pressure. Consider low-sodium alternatives.`
+        });
       }
     }
 
@@ -121,49 +199,52 @@ export default function PersonalizedRiskAnalysis() {
     if (risks.length === 0) {
       risks.push({
         level: 'safe',
-        title: '✅ SAFE TO CONSUME',
-        message: 'No allergens or health condition conflicts detected.',
-        recommendation: 'This product appears safe based on your health profile. Enjoy in moderation as part of a balanced diet.'
+        title: '✅ SAFE FOR YOUR PROFILE',
+        message: 'No allergens or health condition conflicts detected based on your profile.',
+        recommendation: 'This product appears safe for you. Enjoy in moderation as part of a balanced diet.'
       });
     }
 
     setRiskAnalysis(risks);
-
-    // Generate AI recommendations
     await generateAIRecommendations(foodData, risks);
     setLoading(false);
   };
 
   const generateAIRecommendations = async (foodData: any, risks: PersonalizedRisk[]) => {
     try {
+      const actualAllergies = healthProfile.allergies.filter(Boolean);
+      const actualConditions = healthProfile.healthConditions.filter(Boolean);
+      const actualRestrictions = healthProfile.dietaryRestrictions.filter(Boolean);
+      
       const prompt = `
         User Health Profile:
-        - Allergies: ${healthProfile.allergies.join(', ')}
-        - Health Conditions: ${healthProfile.healthConditions.join(', ')}
-        - Dietary Restrictions: ${healthProfile.dietaryRestrictions.join(', ')}
+        - Allergies: ${actualAllergies.length > 0 ? actualAllergies.join(', ') : 'None specified'}
+        - Health Conditions: ${actualConditions.length > 0 ? actualConditions.join(', ') : 'None specified'}
+        - Dietary Restrictions: ${actualRestrictions.length > 0 ? actualRestrictions.join(', ') : 'None specified'}
 
         Scanned Food Product:
         - Product: ${foodData.productName || 'Food Product'}
-        - Ingredients: ${foodData.ingredientAnalysis?.map((i: any) => i.name).join(', ') || 'Not available'}
-        - Nutrition: ${JSON.stringify(foodData.nutrition?.per100g || {})}
+        - Ingredients: ${foodData.ingredientAnalysis?.map((i: any) => i.name || i.ingredient).join(', ') || 'Not available'}
+        - Nutrition per 100g: ${JSON.stringify(foodData.nutrition?.per100g || foodData.per100g_display || {})}
+        - Safety Score: ${foodData.nutrition?.healthScore || 'Not available'}
 
         Risk Analysis Results:
         ${risks.map(r => `- ${r.title}: ${r.message}`).join('\n')}
 
-        Please provide:
-        1. A personalized explanation of the health impact
-        2. Safe consumption advice (if any)
+        Based on this ACTUAL data, provide:
+        1. Personalized health impact explanation
+        2. Safe consumption advice (if applicable)
         3. Alternative food suggestions
         4. Long-term health considerations
         
-        Keep the response friendly, informative, and actionable.
+        Keep response concise and actionable.
       `;
 
       const aiResponse = await getGeminiResponse(prompt);
       setAiRecommendations(aiResponse);
     } catch (error) {
       console.error('AI recommendation error:', error);
-      setAiRecommendations('AI recommendations are currently unavailable. Please consult with a healthcare professional for personalized advice.');
+      setAiRecommendations('AI recommendations are currently unavailable. The analysis above is based on your actual health profile and scanned food data.');
     }
   };
 
@@ -249,11 +330,19 @@ export default function PersonalizedRiskAnalysis() {
         <div className="pt-32 pb-20 px-6 flex items-center justify-center">
           <div className="text-center max-w-md">
             <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">No Scanned Data Found</h2>
-            <p className="text-gray-600 mb-6">Please scan a food product first using Generic Analysis.</p>
-            <Button onClick={() => setLocation('/generic')} className="bg-blue-600 hover:bg-blue-700 px-6 py-3">
-              Go to Generic Analysis
-            </Button>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No Analysis Data Found</h2>
+            <p className="text-gray-600 mb-6">
+              Please complete a Generic Analysis first. Make sure OCR service is running:
+              <code className="block mt-2 p-2 bg-gray-100 text-sm rounded">cd OCR && python test_ocr_simple.py</code>
+            </p>
+            <div className="space-y-3">
+              <Button onClick={() => setLocation('/generic')} className="bg-blue-600 hover:bg-blue-700 px-6 py-3 w-full">
+                Go to Generic Analysis
+              </Button>
+              <p className="text-xs text-gray-500">
+                Debug: Check browser console for data loading issues
+              </p>
+            </div>
           </div>
         </div>
         <BottomNavigation />
@@ -267,11 +356,33 @@ export default function PersonalizedRiskAnalysis() {
   const warningRisks = riskAnalysis.filter(r => r.level === 'warning');
   const safeItems = riskAnalysis.filter(r => r.level === 'safe');
 
+  // Debug logs for render
+  console.log('Rendering with scannedData:', scannedData?.productName);
+  console.log('Risk analysis results:', riskAnalysis.length, 'risks found');
+  console.log('Overall risk level:', overallRisk);
+  console.log('Safety score:', safetyScore);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <ModernNavbar />
       
       <div className="pt-20 pb-12">
+        {/* Prompt to sign in for richer profile data */}
+        {!user && (
+          <div className="max-w-5xl mx-auto px-4 mb-6">
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-yellow-800 font-medium">Sign in for personalized reports</p>
+                  <p className="text-xs text-yellow-700">Sign in to fetch your saved allergies, health conditions and dietary preferences from your profile for a tailored risk analysis.</p>
+                </div>
+                <div>
+                  <Button onClick={() => setLocation('/profile')}>Go to Profile</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Back Button */}
         <div className="px-4 mb-4">
           <Button 
@@ -295,7 +406,7 @@ export default function PersonalizedRiskAnalysis() {
                 <div className="text-center">
                   <h1 className="text-4xl font-bold mb-2">⚠ DO NOT CONSUME</h1>
                   <p className="text-xl opacity-90">
-                    Contains: {criticalRisks.map(r => r.message.match(/contains (\w+)/i)?.[1] || 'allergen').join(', ')}
+                    {criticalRisks.map(r => r.message).join(', ')}
                   </p>
                 </div>
               </div>
@@ -311,7 +422,7 @@ export default function PersonalizedRiskAnalysis() {
                 </div>
                 <div className="text-center">
                   <h1 className="text-4xl font-bold mb-2">⚠ CONSUME WITH CAUTION</h1>
-                  <p className="text-xl opacity-90">Health condition conflicts detected</p>
+                  <p className="text-xl opacity-90">{warningRisks.map(r => r.title.replace(/⚠️\s*/, '')).join(', ')}</p>
                 </div>
               </div>
               <p className="text-center text-lg opacity-90 max-w-2xl mx-auto">
@@ -325,12 +436,12 @@ export default function PersonalizedRiskAnalysis() {
                   <CheckCircle className="w-8 h-8" />
                 </div>
                 <div className="text-center">
-                  <h1 className="text-2xl font-bold mb-1">✓ Compatible With Your Health Profile</h1>
+                  <h1 className="text-2xl font-bold mb-1">✅ SAFE FOR YOUR PROFILE</h1>
                   <p className="text-sm opacity-90">Safe to consume based on your profile</p>
                 </div>
               </div>
               <p className="text-center text-sm opacity-90 max-w-xl mx-auto">
-                No allergens or health condition conflicts detected. Enjoy as part of a balanced diet.
+                {safeItems[0]?.message || 'This product appears safe based on your profile. Enjoy in moderation.'}
               </p>
             </div>
           )}
@@ -340,10 +451,10 @@ export default function PersonalizedRiskAnalysis() {
           {/* Premium Product Summary */}
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-6">
             <div className="flex items-center gap-6">
-              {scannedData.imageUrl && (
+              {(scannedData.imageUrl || previewUrl) && (
                 <div className="flex-shrink-0">
                   <img 
-                    src={scannedData.imageUrl} 
+                    src={scannedData.imageUrl || previewUrl} 
                     alt="Scanned product" 
                     className="w-32 h-40 object-contain rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm"
                   />
@@ -351,7 +462,7 @@ export default function PersonalizedRiskAnalysis() {
               )}
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {scannedData.productName || 'Food Product'}
+                  {scannedData.productName || 'Scanned Food Product'}
                 </h2>
                 <div className="grid grid-cols-2 gap-4 mb-3">
                   <div className="flex items-center gap-3">
@@ -359,20 +470,24 @@ export default function PersonalizedRiskAnalysis() {
                     <CircularProgress score={safetyScore} />
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600 mb-2 block">Flagged Ingredients</span>
+                    <span className="text-sm font-medium text-gray-600 mb-2 block">Risk Analysis Results</span>
                     <div className="flex flex-wrap gap-1">
                       {criticalRisks.length > 0 ? (
                         criticalRisks.map((risk, index) => {
-                          const allergen = risk.message.match(/contains (\w+)/i)?.[1];
-                          return allergen ? (
+                          const allergen = risk.message.match(/contains ([\w\s]+)/i)?.[1] || 'allergen';
+                          return (
                             <Badge key={index} className="bg-red-100 text-red-800 border-red-200 px-2 py-1 text-xs">
-                              {allergen}
+                              ⚠️ {allergen}
                             </Badge>
-                          ) : null;
+                          );
                         })
+                      ) : warningRisks.length > 0 ? (
+                        <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 px-2 py-1 text-xs">
+                          ⚠️ Health warnings
+                        </Badge>
                       ) : (
                         <Badge className="bg-green-100 text-green-800 border-green-200 px-2 py-1 text-xs">
-                          None detected
+                          ✅ Safe for your profile
                         </Badge>
                       )}
                     </div>
@@ -383,8 +498,13 @@ export default function PersonalizedRiskAnalysis() {
                     {scannedData.ingredientAnalysis?.length || 0} ingredients
                   </Badge>
                   <Badge className="bg-purple-50 text-purple-700 border-purple-200 px-2 py-1 text-xs">
-                    {new Date(scannedData.scannedAt).toLocaleDateString()}
+                    Scanned: {new Date(scannedData.scannedAt || Date.now()).toLocaleDateString()}
                   </Badge>
+                  {scannedData.nutrition?.healthScore && (
+                    <Badge className="bg-green-50 text-green-700 border-green-200 px-2 py-1 text-xs">
+                      Health Score: {scannedData.nutrition.healthScore}/100
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
