@@ -246,13 +246,29 @@ export default function Customized() {
       const calorieData = calculateCalories();
       
       // Load CSV data
-      const response = await fetch('/recipe_dataset.csv');
+      const response = await fetch('/custom_recipes_dataset.csv');
       const csvText = await response.text();
       const lines = csvText.split('\n');
       const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
       
       const recipes = lines.slice(1).filter(line => line.trim()).map(line => {
-        const values = line.split(',').map(v => v.replace(/"/g, ''));
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim());
+        
         const recipe: any = {};
         headers.forEach((header, index) => {
           recipe[header] = values[index] || '';
@@ -290,12 +306,12 @@ export default function Customized() {
           totalTime: parseInt(recipe.total_time_min) || 0,
           videoId: recipe.recipe_name || '',
           fatContent: parseInt(recipe.fat_g) || 0,
-          saturatedFatContent: Math.round((parseInt(recipe.fat_g) || 0) * 0.3),
-          cholesterolContent: Math.round(Math.random() * 30),
-          sodiumContent: parseInt(recipe.sodium_mg) || 300,
+          saturatedFatContent: parseInt(recipe.saturated_fat_g) || 0,
+          cholesterolContent: parseInt(recipe.cholesterol_mg) || 0,
+          sodiumContent: parseInt(recipe.sodium_mg) || 0,
           carbohydrateContent: parseInt(recipe.carbs_g) || 0,
-          fiberContent: parseInt(recipe.fiber_g) || Math.round((parseInt(recipe.carbs_g) || 0) * 0.15),
-          sugarContent: parseInt(recipe.sugar_g) || Math.round((parseInt(recipe.carbs_g) || 0) * 0.1),
+          fiberContent: parseInt(recipe.fiber_g) || 0,
+          sugarContent: parseInt(recipe.sugar_g) || 0,
           proteinContent: parseInt(recipe.protein_g) || 0
         }));
       });
@@ -404,13 +420,29 @@ export default function Customized() {
     setCustomLoading(true);
     
     try {
-      const response = await fetch('/recipe_dataset.csv');
+      const response = await fetch('/custom_recipes_dataset.csv');
       const csvText = await response.text();
       const lines = csvText.split('\n');
       const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
       
       const recipes = lines.slice(1).filter(line => line.trim()).map(line => {
-        const values = line.split(',').map(v => v.replace(/"/g, ''));
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim());
+        
         const recipe: any = {};
         headers.forEach((header, index) => {
           recipe[header] = values[index] || '';
@@ -423,13 +455,19 @@ export default function Customized() {
         const protein = parseInt(recipe.protein_g) || 0;
         const carbs = parseInt(recipe.carbs_g) || 0;
         const fat = parseInt(recipe.fat_g) || 0;
+        const sodium = parseInt(recipe.sodium_mg) || 0;
+        const fiber = parseInt(recipe.fiber_g) || 0;
+        const sugar = parseInt(recipe.sugar_g) || 0;
         
         return (
           calories <= customNutrition.calories[0] * 1.2 &&
-          calories >= customNutrition.calories[0] * 0.8 &&
-          protein >= customNutrition.protein[0] * 0.5 &&
-          carbs <= customNutrition.carbohydrates[0] * 1.2 &&
-          fat <= customNutrition.fat[0] * 1.2
+          calories >= customNutrition.calories[0] * 0.5 &&
+          protein >= customNutrition.protein[0] * 0.3 &&
+          carbs <= customNutrition.carbohydrates[0] * 1.5 &&
+          fat <= customNutrition.fat[0] * 1.5 &&
+          sodium <= customNutrition.sodium[0] * 1.2 &&
+          fiber >= customNutrition.fiber[0] * 0.3 &&
+          sugar <= customNutrition.sugar[0] * 1.5
         );
       });
       
@@ -448,11 +486,22 @@ export default function Customized() {
         protein: parseInt(recipe.protein_g) || 0,
         carbs: parseInt(recipe.carbs_g) || 0,
         fat: parseInt(recipe.fat_g) || 0,
+        fiber: parseInt(recipe.fiber_g) || 0,
+        sugar: parseInt(recipe.sugar_g) || 0,
+        sodium: parseInt(recipe.sodium_mg) || 0,
         ingredients: recipe.ingredients ? recipe.ingredients.split(',') : [],
+        instructions: recipe.instructions ? recipe.instructions.split('|') : [],
         cookTime: parseInt(recipe.cook_time_min) || 0,
+        prepTime: parseInt(recipe.prep_time_min) || 0,
+        totalTime: parseInt(recipe.total_time_min) || 0,
+        mealType: recipe.meal_type || '',
+        dietType: recipe.diet_type || '',
         proteinContent: parseInt(recipe.protein_g) || 0,
         carbohydrateContent: parseInt(recipe.carbs_g) || 0,
-        fatContent: parseInt(recipe.fat_g) || 0
+        fatContent: parseInt(recipe.fat_g) || 0,
+        fiberContent: parseInt(recipe.fiber_g) || 0,
+        sugarContent: parseInt(recipe.sugar_g) || 0,
+        sodiumContent: parseInt(recipe.sodium_mg) || 0
       }));
       
       setCustomResults({
@@ -461,26 +510,36 @@ export default function Customized() {
           calories: topRecipes.reduce((sum, r) => sum + r.calories, 0),
           protein: topRecipes.reduce((sum, r) => sum + r.proteinContent, 0),
           carbs: topRecipes.reduce((sum, r) => sum + r.carbohydrateContent, 0),
-          fat: topRecipes.reduce((sum, r) => sum + r.fatContent, 0)
+          fat: topRecipes.reduce((sum, r) => sum + r.fatContent, 0),
+          fiber: topRecipes.reduce((sum, r) => sum + r.fiberContent, 0),
+          sugar: topRecipes.reduce((sum, r) => sum + r.sugarContent, 0),
+          sodium: topRecipes.reduce((sum, r) => sum + r.sodiumContent, 0)
         }
       });
       
     } catch (error) {
+      console.error('Custom recommendation error:', error);
       setCustomResults({
         recipes: [{
-          name: 'Healthy Chicken Bowl',
+          name: 'Healthy Bowl',
           calories: customNutrition.calories[0],
           protein: customNutrition.protein[0],
           carbs: customNutrition.carbohydrates[0],
           fat: customNutrition.fat[0],
-          ingredients: ['Chicken breast', 'Brown rice', 'Vegetables'],
-          cookTime: 25
+          ingredients: ['Mixed vegetables', 'Protein source', 'Healthy grains'],
+          cookTime: 25,
+          proteinContent: customNutrition.protein[0],
+          carbohydrateContent: customNutrition.carbohydrates[0],
+          fatContent: customNutrition.fat[0]
         }],
         totalNutrition: {
           calories: customNutrition.calories[0],
           protein: customNutrition.protein[0],
           carbs: customNutrition.carbohydrates[0],
-          fat: customNutrition.fat[0]
+          fat: customNutrition.fat[0],
+          fiber: customNutrition.fiber[0],
+          sugar: customNutrition.sugar[0],
+          sodium: customNutrition.sodium[0]
         }
       });
     } finally {
@@ -1022,15 +1081,61 @@ export default function Customized() {
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {customResults.recipes.map((recipe: any, index: number) => (
-                          <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <h3 className="font-semibold mb-2">{recipe.name}</h3>
-                            <div className="text-sm space-y-1 mb-3">
-                              <div>Calories: {recipe.calories}</div>
-                              <div>Protein: {recipe.proteinContent || recipe.protein}g</div>
-                              <div>Carbs: {recipe.carbohydrateContent || recipe.carbs}g</div>
-                              <div>Fat: {recipe.fatContent || recipe.fat}g</div>
+                          <details key={index} className="border rounded-lg">
+                            <summary className="p-4 cursor-pointer font-semibold hover:bg-gray-50 flex items-center justify-between">
+                              <span>{recipe.name}</span>
+                              <Play size={16} className="text-red-600" />
+                            </summary>
+                            <div className="p-4 border-t">
+                              <div className="space-y-4">
+                                {recipe.name && (
+                                  <div>
+                                    <div className="flex items-center mb-2">
+                                      <Play size={16} className="text-red-600 mr-2" />
+                                      <strong>How to Make {recipe.name}:</strong>
+                                    </div>
+                                    <YouTubeEmbed searchQuery={recipe.name} title={`How to make ${recipe.name}`} />
+                                  </div>
+                                )}
+                                <div className="text-sm space-y-1">
+                                  <div><strong>Nutritional Values:</strong></div>
+                                  <div>Calories: {recipe.calories}</div>
+                                  <div>Protein: {recipe.proteinContent || recipe.protein}g</div>
+                                  <div>Carbs: {recipe.carbohydrateContent || recipe.carbs}g</div>
+                                  <div>Fat: {recipe.fatContent || recipe.fat}g</div>
+                                  {recipe.fiber && <div>Fiber: {recipe.fiberContent || recipe.fiber}g</div>}
+                                  {recipe.sugar && <div>Sugar: {recipe.sugarContent || recipe.sugar}g</div>}
+                                  {recipe.sodium && <div>Sodium: {recipe.sodiumContent || recipe.sodium}mg</div>}
+                                </div>
+                                <div>
+                                  <strong>Ingredients:</strong>
+                                  <ul className="list-disc list-inside text-sm mt-1">
+                                    {recipe.ingredients?.map((ing: string, i: number) => (
+                                      <li key={i}>{ing.trim()}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                {recipe.instructions && recipe.instructions.length > 0 && (
+                                  <div>
+                                    <strong>Instructions:</strong>
+                                    <ol className="list-decimal list-inside text-sm mt-1">
+                                      {recipe.instructions.map((inst: string, i: number) => (
+                                        <li key={i}>{inst.trim()}</li>
+                                      ))}
+                                    </ol>
+                                  </div>
+                                )}
+                                <div className="text-sm">
+                                  <strong>Cooking Time:</strong>
+                                  <div>Cook Time: {recipe.cookTime}min</div>
+                                  <div>Prep Time: {recipe.prepTime}min</div>
+                                  <div>Total Time: {recipe.totalTime}min</div>
+                                  {recipe.mealType && <div>Meal Type: {recipe.mealType}</div>}
+                                  {recipe.dietType && <div>Diet Type: {recipe.dietType}</div>}
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          </details>
                         ))}
                       </div>
                     </CardContent>

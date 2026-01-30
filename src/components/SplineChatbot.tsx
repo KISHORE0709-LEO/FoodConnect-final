@@ -3,6 +3,7 @@ import Spline from '@splinetool/react-spline';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { searchKnowledgeBase } from '@/lib/knowledgeBase';
 
 export function SplineChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,16 +17,10 @@ export function SplineChatbot() {
     
     setMessages(prev => [...prev, { role: 'user', content: input }]);
     
-    // Simple bot responses
+    // Get response from knowledge base
     setTimeout(() => {
-      const responses = [
-        "I can help you analyze food ingredients and provide health insights!",
-        "Try scanning a food label for personalized analysis.",
-        "Would you like to know about nutrition facts or ingredient safety?",
-        "I'm here to help with your food safety questions!"
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      setMessages(prev => [...prev, { role: 'bot', content: randomResponse }]);
+      const response = searchKnowledgeBase(input);
+      setMessages(prev => [...prev, { role: 'bot', content: response }]);
     }, 1000);
     
     setInput('');

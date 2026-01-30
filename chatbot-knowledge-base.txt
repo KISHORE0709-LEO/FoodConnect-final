@@ -1,0 +1,131 @@
+FOODCONNECT CHATBOT KNOWLEDGE BASE
+
+=== ABOUT FOODCONNECT ===
+FoodConnect is a React-based food analysis and nutrition tracking application with customized allergen detection and AI-powered diet recommendations.
+
+=== KEY FEATURES ===
+- Customized Food Analysis: Upload food packages and get personalized allergen warnings
+- Diet Recommendations: AI-powered meal planning based on your health profile
+- Nutrition Tracking: Track calories, macros, and nutritional intake
+- Meal Planning: Condition-specific recipes for diabetes, PCOS, thyroid, etc.
+- Health Insights: Health forecasting and personalized recommendations
+- Smart Grocery Lists: Generate shopping lists from meal plans
+- User Profiles: Store allergies, health conditions, and dietary preferences
+
+=== SETUP & INSTALLATION ===
+Q: How do I install FoodConnect?
+A: 1. Clone the repository: git clone https://github.com/chv-sneha/FoodConnect-final.git
+   2. Navigate to directory: cd FoodConnect-final
+   3. Install dependencies: npm install
+   4. Create .env file with Firebase credentials
+   5. Run development server: npm run dev
+
+Q: What are the system requirements?
+A: Node.js and npm installed on your system. The app runs on localhost:5173 in development.
+
+Q: How do I configure Firebase?
+A: Create a .env file with these variables:
+VITE_FIREBASE_API_KEY=AIzaSyABw5XHxlMvNros2Bp04idQfD9ROsvc6mc
+VITE_FIREBASE_AUTH_DOMAIN=foodconnect-dc7ce.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=foodconnect-dc7ce
+VITE_FIREBASE_STORAGE_BUCKET=foodconnect-dc7ce.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=329492075093
+VITE_FIREBASE_APP_ID=1:329492075093:web:54611482890b31991cbadc
+VITE_FIREBASE_MEASUREMENT_ID=G-0R0ENB70W6
+
+=== TECHNICAL STACK ===
+Q: What technologies does FoodConnect use?
+A: React 18, TypeScript, Vite, Tailwind CSS, Firebase, Lucide React, React Query, Wouter
+
+Q: What is the project structure?
+A: src/components/ (React components), src/pages/ (Page components), src/context/ (Auth & UserProfile), src/lib/ (Utilities), src/hooks/ (Custom hooks), src/types/ (TypeScript types)
+
+=== FUNCTIONALITY ===
+Q: How does food analysis work?
+A: Upload food package images and get personalized allergen warnings based on your profile and health conditions.
+
+Q: What health conditions are supported?
+A: Diabetes, PCOS, thyroid conditions, and other dietary restrictions with condition-specific recipes.
+
+Q: How does nutrition tracking work?
+A: Track daily calories, macronutrients (proteins, carbs, fats), and get detailed nutritional insights.
+
+Q: Can I get meal recommendations?
+A: Yes, AI-powered meal planning provides personalized recommendations based on your health profile and dietary preferences.
+
+Q: How do grocery lists work?
+A: Generate smart shopping lists automatically from your meal plans and dietary requirements.
+
+Q: How to find recipes for PCOS?
+A: Go to the meal planning section and select PCOS as your health condition. FoodConnect will provide personalized PCOS-friendly recipes based on your dietary needs.
+
+Q: How to find recipes for diabetes?
+A: Navigate to meal planning, set diabetes as your health condition, and get customized diabetic-friendly meal recommendations.
+
+Q: How to find recipes for thyroid?
+A: Use the meal planning feature and specify thyroid condition to receive thyroid-specific recipes and meal plans.
+
+Q: What is FoodConnect?
+A: FoodConnect is a food analysis and nutrition tracking app that helps you make healthier food choices with personalized allergen detection and AI-powered diet recommendations.
+
+Q: How do I upload food packages?
+A: Use the food analysis feature to take photos of food packages. The app will scan ingredients and provide personalized allergen warnings.
+
+Q: How do I track my nutrition?
+A: Log your meals in the nutrition tracking section to monitor calories, proteins, carbs, fats, and other nutrients throughout the day.
+
+Q: Can I set dietary preferences?
+A: Yes, create a user profile to store your allergies, health conditions, dietary preferences, and nutritional goals for personalized recommendations.
+
+Q: How do I get personalized meal plans?
+A: Complete your health profile with conditions like PCOS, diabetes, or thyroid, and the AI will generate customized meal plans for you.
+
+Q: What makes FoodConnect different?
+A: FoodConnect offers personalized allergen detection, condition-specific recipes, and AI-powered recommendations based on your unique health profile.
+
+=== USER ACCOUNT ===
+Q: How do I create an account?
+A: Use Firebase Authentication with email/password. Enable this in your Firebase project settings.
+
+Q: What information can I store in my profile?
+A: Allergies, health conditions, dietary preferences, and nutritional goals.
+
+Q: Is my data secure?
+A: Yes, all data is stored securely using Firebase with proper authentication and database rules.
+
+=== DEPLOYMENT ===
+Q: How can I deploy FoodConnect?
+A: Build with 'npm run build' and deploy to Vercel, Netlify, Firebase Hosting, or any static hosting service.
+
+Q: What are the available scripts?
+A: npm run dev (development), npm run build (production build), npm run preview (preview build)
+
+=== TROUBLESHOOTING ===
+Q: The app won't start, what should I do?
+A: Check that Node.js is installed, run 'npm install', ensure .env file is configured correctly with Firebase credentials.
+
+Q: Firebase authentication isn't working?
+A: Verify Firebase project setup, check that Authentication is enabled with Email/Password provider, and confirm .env variables are correct.
+
+Q: How do I report bugs or contribute?
+A: Submit issues or pull requests on GitHub. Contributions are welcome following standard GitHub workflow.
+
+=== CONTACT & SUPPORT ===
+Q: Who created FoodConnect?
+A: Developed by Sneha CHV (@chv-sneha)
+
+Q: What license does FoodConnect use?
+A: MIT License
+
+Q: Where can I find the source code?
+A: GitHub repository: https://github.com/chv-sneha/FoodConnect-final.git
+
+=== COMMON ISSUES ===
+Q: Port 5173 is already in use?
+A: Kill the process using that port or use a different port with --port flag.
+
+Q: Build fails?
+A: Check for TypeScript errors, ensure all dependencies are installed, verify .env file format.
+
+Q: Firebase connection errors?
+A: Verify internet connection, check Firebase project status, confirm API keys are valid and not expired.
