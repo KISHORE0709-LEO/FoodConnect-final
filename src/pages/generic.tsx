@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Wifi, WifiOff, UserCheck } from 'lucide-react';
 import { Link } from 'wouter';
 import { useOffline } from '@/hooks/useOffline';
+import { useEffect, useState } from 'react';
 
 export default function Generic() {
   const isOffline = useOffline();
@@ -40,16 +41,7 @@ export default function Generic() {
               </Button>
             </Link>
             
-            {/* Customize Button - Top Right */}
-            {localStorage.getItem('lastScannedFood') && (
-              <Button 
-                onClick={() => window.location.href = '/customized?from=generic'}
-                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                <UserCheck className="w-5 h-5" />
-                <span className="font-medium">View Customized Risk Report</span>
-              </Button>
-            )}
+            {/* Removed Customize Button */}
           </div>
 
           <GenericAnalysis />
@@ -60,3 +52,4 @@ export default function Generic() {
     </div>
   );
 }
+

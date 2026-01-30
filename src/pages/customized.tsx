@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { BottomNavigation } from '@/components/navigation';
 import { ModernNavbar } from '@/components/ModernNavbar';
-import PersonalizedRiskAnalysis from '@/components/PersonalizedRiskAnalysis';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calculator, Activity, ChefHat, Play } from 'lucide-react';
+import { ArrowLeft, Calculator, Activity, ChefHat, Play, Save, TrendingUp } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Link } from 'wouter';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { VisualHealthDashboard } from '@/components/VisualHealthDashboard';
 
 interface PersonData {
   age: number;
@@ -25,15 +25,7 @@ interface PersonData {
 }
 
 export default function Customized() {
-  // Check if we should show personalized risk analysis
-  const urlParams = new URLSearchParams(window.location.search);
-  const fromGeneric = urlParams.get('from') === 'generic';
-  const storedData = localStorage.getItem('lastScannedFood');
-  
-  // If we came from generic page and have stored data, show risk analysis
-  if (fromGeneric && storedData) {
-    return <PersonalizedRiskAnalysis />;
-  }
+  // Removed personalized risk analysis redirect
   
   const [activeTab, setActiveTab] = useState('automatic');
   const [formData, setFormData] = useState<PersonData>({
@@ -64,6 +56,9 @@ export default function Customized() {
   const [customIngredients, setCustomIngredients] = useState('');
   const [customResults, setCustomResults] = useState<any>(null);
   const [customLoading, setCustomLoading] = useState(false);
+  const [savedMeals, setSavedMeals] = useState<any>({});
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [showHealthDashboard, setShowHealthDashboard] = useState(false);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
@@ -558,6 +553,34 @@ export default function Customized() {
     }
   };
 
+  const saveMealComposition = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const mealData = {
+      date: today,
+      meals: selectedMeals,
+      nutrition: calculateSelectedMealNutrition(),
+      caloriePlan: selectedCaloriePlan,
+      userProfile: {
+        age: formData.age,
+        height: formData.height,
+        weight: formData.weight,
+        activity: formData.activity,
+        dietType: formData.dietType
+      }
+    };
+    
+    // Save to localStorage for AI Health Forecast
+    const existingMeals = JSON.parse(localStorage.getItem('savedMealHistory') || '[]');
+    const updatedMeals = [...existingMeals.filter((m: any) => m.date !== today), mealData];
+    localStorage.setItem('savedMealHistory', JSON.stringify(updatedMeals));
+    
+    setSavedMeals({...savedMeals, [today]: mealData});
+    setShowSaveSuccess(true);
+    setShowHealthDashboard(true);
+    
+    setTimeout(() => setShowSaveSuccess(false), 3000);
+  };
+
   return (
     <div className="min-h-screen bg-white pb-20">
       <ModernNavbar />
@@ -936,6 +959,36 @@ export default function Customized() {
                         </div>
 
                       </div>
+                      )}
+                      
+                      {/* Save Meal Button */}
+                      <div className="mt-6 text-center">
+                        <Button 
+                          onClick={saveMealComposition}
+                          className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
+                        >
+                          <Save className="mr-2" size={20} />
+                          Save Meal Composition
+                        </Button>
+                        {showSaveSuccess && (
+                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <p className="text-green-800 font-medium">✅ Meal composition saved successfully!</p>
+                            <p className="text-green-600 text-sm">Your eating patterns are being tracked for AI Health Forecast</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Visual Health Dashboard */}
+                      {showHealthDashboard && (
+                        <div className="mt-8">
+                          <VisualHealthDashboard 
+                            mealData={{
+                              nutrition: calculateSelectedMealNutrition(),
+                              meals: selectedMeals
+                            }}
+                            userProfile={formData}
+                          />
+                        </div>
                       )}
                     </CardContent>
                   </Card>

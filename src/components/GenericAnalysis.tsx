@@ -79,7 +79,7 @@ export default function GenericAnalysis() {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+        video: { facingMode: 'environment' } // Use back camera on mobile
       });
       setShowCamera(true);
       if (videoRef.current) {
@@ -129,7 +129,7 @@ export default function GenericAnalysis() {
       const formData = new FormData();
       formData.append('image', selectedFile);
 
-      const response = await fetch('http://localhost:5000/api/ocr/analyze', {
+      const response = await fetch('http://localhost:5002/api/generic/analyze', {
         method: 'POST',
         body: formData,
       });
@@ -140,23 +140,24 @@ export default function GenericAnalysis() {
         setResult(data);
         setShowCustomizeButton(true);
         // Store the analysis data for customized analysis
-        localStorage.setItem('lastScannedFood', JSON.stringify({
+        const analysisData = {
           ...data,
           imageUrl: previewUrl,
           scannedAt: new Date().toISOString()
-        }));
+        };
+        localStorage.setItem('lastScannedFood', JSON.stringify(analysisData));
+        
+        // Trigger storage event for other components to update
+        window.dispatchEvent(new Event('storage'));
       } else {
         setError(data.error || 'Analysis failed');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('Analysis error:', err);
+      setError('Analysis failed. Please ensure the OCR service is running: python test_ocr_simple.py');
     } finally {
       setIsAnalyzing(false);
     }
-  };
-
-  const handleCustomizeAnalysis = () => {
-    setLocation('/customized');
   };
 
   const getRiskColor = (score: number) => {
@@ -334,36 +335,48 @@ export default function GenericAnalysis() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Nutritional Information (per 100g)</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(() => {
-                  const map = result.nutrition.per100g_display || {
-                    'Energy (kcal)': result.nutrition.per100g.energy_kcal,
-                    'Protein (g)': result.nutrition.per100g.protein_g,
-                    'Carbohydrate (g)': result.nutrition.per100g.carbohydrate_g,
-                    'Total Sugars (g)': result.nutrition.per100g.total_sugar_g,
-                    'Added Sugars (g)': result.nutrition.per100g.added_sugar_g || result.nutrition.per100g.sugar_g,
-                    'Total Fat (g)': result.nutrition.per100g.total_fat_g,
-                    'Saturated Fat (g)': result.nutrition.per100g.saturated_fat_g,
-                    'Trans Fat (g)': result.nutrition.per100g.trans_fat_g,
-                    'Sodium (mg)': result.nutrition.per100g.sodium_mg
-                  };
-
-                  return Object.entries(map).map(([label, value]) => {
-                    const key = label.toLowerCase();
-                    const style = key.includes('energy') ? 'bg-blue-50 text-blue-900' :
-                                  key.includes('protein') ? 'bg-green-50 text-green-900' :
-                                  key.includes('carbohydrate') ? 'bg-yellow-50 text-yellow-900' :
-                                  key.includes('fat') ? 'bg-orange-50 text-orange-900' :
-                                  key.includes('sodium') ? 'bg-red-50 text-red-900' :
-                                  'bg-purple-50 text-purple-900';
-
-                    return (
-                      <div key={label} className={`${style.split(' ')[0]} p-4 rounded-lg`}>
-                        <h3 className="text-sm font-medium mb-1">{label}</h3>
-                        <p className="text-lg font-bold">{value !== null && value !== undefined ? `${value}${label.includes('(mg)') ? 'mg' : label.includes('(kcal)') ? ' kcal' : 'g'}` : 'N/A'}</p>
-                      </div>
-                    );
-                  });
-                })()}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-blue-800 mb-1">Energy</h3>
+                  <p className="text-lg font-bold text-blue-900">{result.nutrition.per100g.energy_kcal || 'N/A'} kcal</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-green-800 mb-1">Protein</h3>
+                  <p className="text-lg font-bold text-green-900">{result.nutrition.per100g.protein_g || 'N/A'}g</p>
+                </div>
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-yellow-800 mb-1">Carbohydrate</h3>
+                  <p className="text-lg font-bold text-yellow-900">{result.nutrition.per100g.carbohydrate_g || 'N/A'}g</p>
+                </div>
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-orange-800 mb-1">Total Fat</h3>
+                  <p className="text-lg font-bold text-orange-900">{result.nutrition.per100g.total_fat_g || 'N/A'}g</p>
+                  {result.nutrition.per100g.saturated_fat_g && (
+                    <p className="text-xs text-orange-700 mt-1">Saturated: {result.nutrition.per100g.saturated_fat_g}g</p>
+                  )}
+                  {result.nutrition.per100g.trans_fat_g !== null && (
+                    <p className="text-xs text-orange-700">Trans: {result.nutrition.per100g.trans_fat_g || 0}g</p>
+                  )}
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-red-800 mb-1">Sodium</h3>
+                  <p className="text-lg font-bold text-red-900">{result.nutrition.per100g.sodium_mg || 'N/A'}mg</p>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-purple-800 mb-1">Total Sugars</h3>
+                  <p className="text-lg font-bold text-purple-900">{result.nutrition.per100g.total_sugar_g ?? result.nutrition.per100g.sugar_g ?? 'N/A'}g</p>
+                </div>
+                <div className="bg-indigo-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-indigo-800 mb-1">Added Sugars</h3>
+                  <p className="text-lg font-bold text-indigo-900">{result.nutrition.per100g.added_sugar_g ?? 'N/A'}g</p>
+                </div>
+                <div className="bg-teal-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-teal-800 mb-1">Fiber</h3>
+                  <p className="text-lg font-bold text-teal-900">{result.nutrition.per100g.fiber_g ?? 'N/A'}g</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium text-gray-800 mb-1">Cholesterol</h3>
+                  <p className="text-lg font-bold text-gray-900">{result.nutrition.per100g.cholesterol_mg ?? 'N/A'}mg</p>
+                </div>
               </div>
             </div>
           )}
@@ -446,6 +459,36 @@ export default function GenericAnalysis() {
               })}
             </div>
           </div>
+
+
+
+          {/* Customized Risk Report Button - Only show after successful analysis */}
+          {result && (
+            <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg shadow-md p-6 text-center">
+              <div className="flex items-center justify-center mb-4">
+                <UserCheck className="w-8 h-8 text-blue-600 mr-3" />
+                <h2 className="text-xl font-bold text-gray-900">Get Personalized Analysis</h2>
+              </div>
+              <p className="text-gray-600 mb-4">
+                Get a detailed risk assessment based on your health profile, allergies, and dietary restrictions
+              </p>
+              <button
+                onClick={() => {
+                  // Check if analysis data exists before navigating
+                  const storedData = localStorage.getItem('lastScannedFood');
+                  if (!storedData) {
+                    alert('Please complete the food analysis first before viewing the customized risk report.');
+                    return;
+                  }
+                  setLocation('/customized-risk-report');
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 font-medium flex items-center space-x-2 mx-auto"
+              >
+                <UserCheck className="w-5 h-5" />
+                <span>View Customized Risk Report</span>
+              </button>
+            </div>
+          )}
 
 
         </div>

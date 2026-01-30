@@ -20,6 +20,7 @@ import Profile from "@/pages/profile";
 import ProfileEdit from "@/pages/profile-edit";
 import DietRecommendation from "@/pages/diet-recommendation";
 import Customized from "@/pages/customized";
+import CustomizedRiskReport from "@/pages/customized-risk-report";
 import FoodDatabase from "@/pages/food-database";
 import HealthInsights from "@/pages/health-insights";
 import About from "@/pages/about";
@@ -44,6 +45,7 @@ function Router() {
         <ProtectedRoute><Scan /></ProtectedRoute>
       </Route>
       <Route path="/customized" component={Customized} />
+      <Route path="/customized-risk-report" component={CustomizedRiskReport} />
       <Route path="/food-database" component={FoodDatabase} />
       <Route path="/health-insights" component={HealthInsights} />
       <Route path="/about" component={About} />
@@ -80,7 +82,7 @@ function App() {
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   // Pages that should use ModernNavbar instead of TopNavigation
-  const modernNavbarPages = ['/', '/about', '/contact', '/food-database', '/health-insights', '/generic', '/customized', '/ai-meal-budget-planner', '/healing-recipes', '/ai-health-forecast', '/consumer-rights'];
+  const modernNavbarPages = ['/', '/about', '/contact', '/food-database', '/health-insights', '/generic', '/customized', '/customized-risk-report', '/ai-meal-budget-planner', '/healing-recipes', '/ai-health-forecast', '/consumer-rights'];
   const shouldShowModernNavbar = modernNavbarPages.includes(location);
 
   // Major transition routes from home (excluding navbar pages)
