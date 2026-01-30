@@ -12,7 +12,7 @@ import {
   Volume2, 
   Globe, 
   Lightbulb,
-  ChartBar,
+  BarChart3,
   RefreshCw,
   Flag,
   Heart,
@@ -164,7 +164,7 @@ export function EnhancedAnalysisResults({
             {/* Toxicity Breakdown */}
             <div className="space-y-4">
               <h4 className="font-semibold flex items-center gap-2">
-                <ChartBar className="w-5 h-5" />
+                <BarChart3 className="w-5 h-5" />
                 Toxicity Analysis
               </h4>
               

@@ -1,0 +1,7 @@
+{
+  "raw_text": "    ' Invoice    Your Company LLC Address 123, State, My Country P 111-222-333, F 111-222-334    BILL TO:  John Doe   Alpha Bravo Road 33   P: 111-222-338, F: 111-222-834  client@example.net    SHIPPING TO:  John Doe Office   Office Road 38   P: 111-383-222, F: 122-222-334  office@example.net    http://mrsinvoice.com                             Invoice # 00001  Invoice Date 12/12/2001  Name of Rep. Bob   Contact Phone 101-102-103         Payment Terms              Cash on Delivery              Amount Due: $4,170                        NO PRODUCTS / SERVICE QUANTITY / RATE / UNIT AMOUNT  HOURS PRICE   1 tye 2 $20 $40   2__| Steering Wheel 5 $10 $50   3 | Engine oil 10 $15 $150   4 | Brake Pad 24 $1000 $2,400   Subtotal $275   Tax (10%) $27.5   Grand Total $202.5    \u2018THANK YOU FOR YOUR BUSINESS ",
+  "nutrition_facts": {},
+  "ingredients": [],
+  "allergens": [],
+  "serving_size": null
+}

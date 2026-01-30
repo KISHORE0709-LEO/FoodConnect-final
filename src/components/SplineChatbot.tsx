@@ -3,6 +3,7 @@ import Spline from '@splinetool/react-spline';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { getGeminiResponse } from '@/lib/geminiService';
 
 export function SplineChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,22 +12,18 @@ export function SplineChatbot() {
   ]);
   const [input, setInput] = useState('');
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
     
     setMessages(prev => [...prev, { role: 'user', content: input }]);
     
-    // Simple bot responses
-    setTimeout(() => {
-      const responses = [
-        "I can help you analyze food ingredients and provide health insights!",
-        "Try scanning a food label for personalized analysis.",
-        "Would you like to know about nutrition facts or ingredient safety?",
-        "I'm here to help with your food safety questions!"
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      setMessages(prev => [...prev, { role: 'bot', content: randomResponse }]);
-    }, 1000);
+    // Get response from Gemini AI
+    try {
+      const response = await getGeminiResponse(input);
+      setMessages(prev => [...prev, { role: 'bot', content: response }]);
+    } catch (error) {
+      setMessages(prev => [...prev, { role: 'bot', content: 'Sorry, I encountered an error. Please try again.' }]);
+    }
     
     setInput('');
   };

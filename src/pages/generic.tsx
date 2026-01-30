@@ -2,7 +2,7 @@ import { BottomNavigation } from '@/components/navigation';
 import { ModernNavbar } from '@/components/ModernNavbar';
 import GenericAnalysis from '@/components/GenericAnalysis';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Wifi, WifiOff } from 'lucide-react';
+import { ArrowLeft, Wifi, WifiOff, UserCheck } from 'lucide-react';
 import { Link } from 'wouter';
 import { useOffline } from '@/hooks/useOffline';
 
@@ -31,14 +31,25 @@ export default function Generic() {
       
       <section className="pt-32 pb-8 px-4">
         <div className="max-w-6xl mx-auto">
-          {/* Back Button */}
-          <div className="mb-6">
+          {/* Back Button and Customize Button */}
+          <div className="flex items-center justify-between mb-6">
             <Link href="/">
               <Button variant="ghost" className="flex items-center space-x-2">
                 <ArrowLeft size={16} />
                 <span>Back to Home</span>
               </Button>
             </Link>
+            
+            {/* Customize Button - Top Right */}
+            {localStorage.getItem('lastScannedFood') && (
+              <Button 
+                onClick={() => window.location.href = '/customized?from=generic'}
+                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <UserCheck className="w-5 h-5" />
+                <span className="font-medium">View Customized Risk Report</span>
+              </Button>
+            )}
           </div>
 
           <GenericAnalysis />

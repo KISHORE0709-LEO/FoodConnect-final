@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, Loader2, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Camera, Upload, Loader2, AlertTriangle, CheckCircle, XCircle, UserCheck } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 interface AnalysisResult {
   success: boolean;
@@ -49,11 +50,13 @@ interface AnalysisResult {
 }
 
 export default function GenericAnalysis() {
+  const [, setLocation] = useLocation();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showCustomizeButton, setShowCustomizeButton] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
@@ -89,6 +92,13 @@ export default function GenericAnalysis() {
 
       if (data.success) {
         setResult(data);
+        setShowCustomizeButton(true);
+        // Store the analysis data for customized analysis
+        localStorage.setItem('lastScannedFood', JSON.stringify({
+          ...data,
+          imageUrl: previewUrl,
+          scannedAt: new Date().toISOString()
+        }));
       } else {
         setError(data.error || 'Analysis failed');
       }
@@ -97,6 +107,10 @@ export default function GenericAnalysis() {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleCustomizeAnalysis = () => {
+    setLocation('/customized');
   };
 
   const getRiskColor = (score: number) => {
@@ -127,6 +141,7 @@ export default function GenericAnalysis() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Generic Food Analysis

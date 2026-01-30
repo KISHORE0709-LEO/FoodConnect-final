@@ -1,0 +1,33 @@
+# Install Tesseract OCR
+
+## The OCR needs Tesseract to extract text from images.
+
+### Windows Installation:
+
+1. Download Tesseract installer:
+   https://github.com/UB-Mannheim/tesseract/wiki
+
+2. Download this file:
+   tesseract-ocr-w64-setup-5.3.3.20231005.exe
+
+3. Run the installer
+
+4. During installation, note the installation path (usually: C:\Program Files\Tesseract-OCR)
+
+5. Add to PATH or set in Python:
+   
+   Option A: Add to Windows PATH
+   - Search "Environment Variables" in Windows
+   - Edit PATH variable
+   - Add: C:\Program Files\Tesseract-OCR
+
+   Option B: Set in Python code
+   - Add this line before running OCR:
+   pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+6. Restart terminal and test:
+   tesseract --version
+
+### Quick Test After Installation:
+
+python test_ocr_simple.py test_images/test-1.jpg

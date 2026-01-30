@@ -27,3 +27,7 @@ logs/
 tmp/
 temp/
 cache/
+
+# Backup files
+*.bak
+*.backup

@@ -1,0 +1,11 @@
+opencv-python
+pytesseract
+numpy
+nltk
+pillow
+imutils
+dash
+dash-extensions
+matplotlib
+flask
+flask-cors
