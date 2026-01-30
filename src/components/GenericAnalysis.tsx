@@ -80,7 +80,7 @@ export default function GenericAnalysis() {
       const formData = new FormData();
       formData.append('image', selectedFile);
 
-      const response = await fetch('/api/analyze/generic', {
+      const response = await fetch('http://localhost:5000/api/ocr/analyze', {
         method: 'POST',
         body: formData,
       });
@@ -228,40 +228,40 @@ export default function GenericAnalysis() {
           </div>
 
           {/* Nutritional Information */}
-          {result.nutrition?.per100g && (
+          { (result.nutrition?.per100g_display || result.nutrition?.per100g) && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Nutritional Information (per 100g)</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-blue-800 mb-1">Energy</h3>
-                  <p className="text-lg font-bold text-blue-900">{result.nutrition.per100g.energy_kcal || 'N/A'} kcal</p>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-green-800 mb-1">Protein</h3>
-                  <p className="text-lg font-bold text-green-900">{result.nutrition.per100g.protein_g || 'N/A'}g</p>
-                </div>
-                <div className="bg-yellow-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-yellow-800 mb-1">Carbohydrate</h3>
-                  <p className="text-lg font-bold text-yellow-900">{result.nutrition.per100g.carbohydrate_g || 'N/A'}g</p>
-                </div>
-                <div className="bg-orange-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-orange-800 mb-1">Total Fat</h3>
-                  <p className="text-lg font-bold text-orange-900">{result.nutrition.per100g.total_fat_g || 'N/A'}g</p>
-                  {result.nutrition.per100g.saturated_fat_g && (
-                    <p className="text-xs text-orange-700 mt-1">Saturated: {result.nutrition.per100g.saturated_fat_g}g</p>
-                  )}
-                  {result.nutrition.per100g.trans_fat_g !== null && (
-                    <p className="text-xs text-orange-700">Trans: {result.nutrition.per100g.trans_fat_g || 0}g</p>
-                  )}
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-red-800 mb-1">Sodium</h3>
-                  <p className="text-lg font-bold text-red-900">{result.nutrition.per100g.sodium_mg || 'N/A'}mg</p>
-                </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-purple-800 mb-1">Added Sugars</h3>
-                  <p className="text-lg font-bold text-purple-900">{result.nutrition.per100g.sugar_g !== null ? result.nutrition.per100g.sugar_g : 'N/A'}g</p>
-                </div>
+                {(() => {
+                  const map = result.nutrition.per100g_display || {
+                    'Energy (kcal)': result.nutrition.per100g.energy_kcal,
+                    'Protein (g)': result.nutrition.per100g.protein_g,
+                    'Carbohydrate (g)': result.nutrition.per100g.carbohydrate_g,
+                    'Total Sugars (g)': result.nutrition.per100g.total_sugar_g,
+                    'Added Sugars (g)': result.nutrition.per100g.added_sugar_g || result.nutrition.per100g.sugar_g,
+                    'Total Fat (g)': result.nutrition.per100g.total_fat_g,
+                    'Saturated Fat (g)': result.nutrition.per100g.saturated_fat_g,
+                    'Trans Fat (g)': result.nutrition.per100g.trans_fat_g,
+                    'Sodium (mg)': result.nutrition.per100g.sodium_mg
+                  };
+
+                  return Object.entries(map).map(([label, value]) => {
+                    const key = label.toLowerCase();
+                    const style = key.includes('energy') ? 'bg-blue-50 text-blue-900' :
+                                  key.includes('protein') ? 'bg-green-50 text-green-900' :
+                                  key.includes('carbohydrate') ? 'bg-yellow-50 text-yellow-900' :
+                                  key.includes('fat') ? 'bg-orange-50 text-orange-900' :
+                                  key.includes('sodium') ? 'bg-red-50 text-red-900' :
+                                  'bg-purple-50 text-purple-900';
+
+                    return (
+                      <div key={label} className={`${style.split(' ')[0]} p-4 rounded-lg`}>
+                        <h3 className="text-sm font-medium mb-1">{label}</h3>
+                        <p className="text-lg font-bold">{value !== null && value !== undefined ? `${value}${label.includes('(mg)') ? 'mg' : label.includes('(kcal)') ? ' kcal' : 'g'}` : 'N/A'}</p>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}
