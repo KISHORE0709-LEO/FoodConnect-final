@@ -79,7 +79,7 @@ export default function GenericAnalysis() {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+        video: { facingMode: 'environment' } // Use back camera on mobile
       });
       setShowCamera(true);
       if (videoRef.current) {
@@ -331,7 +331,7 @@ export default function GenericAnalysis() {
           </div>
 
           {/* Nutritional Information */}
-          {result.nutrition?.per100g && (
+          { (result.nutrition?.per100g_display || result.nutrition?.per100g) && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Nutritional Information (per 100g)</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

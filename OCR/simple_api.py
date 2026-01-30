@@ -10,8 +10,8 @@ import io
 app = Flask(__name__)
 CORS(app)
 
-# Set Tesseract path for macOS
-pytesseract.pytesseract.tesseract_cmd = '/usr/local/bin/tesseract'
+# Set Tesseract path for Windows
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 @app.route('/api/analyze/generic', methods=['POST'])
 def analyze_generic():
@@ -250,7 +250,7 @@ if __name__ == '__main__':
     print("=" * 50)
     print("FoodConnect OCR API Server")
     print("=" * 50)
-    print("Starting server on http://localhost:5000")
-    print("Health check: http://localhost:5000/api/health")
+    print("Starting server on http://localhost:5002")
+    print("Health check: http://localhost:5002/api/health")
     print("=" * 50)
     app.run(debug=True, host='0.0.0.0', port=5002)
