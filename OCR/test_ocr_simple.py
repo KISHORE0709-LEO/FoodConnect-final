@@ -343,6 +343,7 @@ def parse_with_validation(raw_text):
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/analyze', methods=['POST'])
 @app.route('/api/analyze/generic', methods=['POST'])
 @app.route('/api/generic/analyze', methods=['POST'])
 def analyze():
@@ -376,8 +377,6 @@ def analyze():
         print(f"[OCR] raw_text length: {len(raw_text)}")
 
         result = parse_with_validation(raw_text)
-<<<<<<< Updated upstream
-=======
         
         # Fallback nutrition for common products if OCR fails
         if not result.get('nutrition_facts') or len(result.get('nutrition_facts', {})) < 3:
@@ -397,7 +396,6 @@ def analyze():
                     'trans_fat_g': 0.1,
                     'sodium_mg': 510
                 }
->>>>>>> Stashed changes
 
         # Ensure salt/iodised salt is present in ingredientAnalysis (extra safety fallback)
         if result.get('ingredients'):
@@ -474,6 +472,7 @@ def analyze():
         tb = traceback.format_exc()
         print('[OCR ERROR]', tb)
         return jsonify({'success': False, 'error': str(e), 'traceback': tb}), 500
+
 def detect_fssai(raw_text):
     text = raw_text.lower()
     compact = re.sub(r'[^a-z0-9]', '', text)
@@ -585,10 +584,5 @@ def generate_recommendations(result):
 
 
 if __name__ == '__main__':
-<<<<<<< Updated upstream
-    print('Starting OCR API on http://localhost:5002')
-    app.run(debug=True, host='0.0.0.0', port=5002)
-=======
-    print('Starting OCR API on http://localhost:5004')
-    app.run(debug=True, host='0.0.0.0', port=5004)
->>>>>>> Stashed changes
+    print('Starting OCR API on http://localhost:5005')
+    app.run(debug=True, host='0.0.0.0', port=5005)

@@ -1,33 +1,23 @@
 import { useState, useEffect } from 'react';
 import { BottomNavigation } from '@/components/navigation';
 import { ModernNavbar } from '@/components/ModernNavbar';
-<<<<<<< Updated upstream
-=======
 import PersonalizedRiskAnalysis from '@/components/PersonalizedRiskAnalysis';
 import AiMealBudgetPlanner from '@/components/AiMealBudgetPlanner';
->>>>>>> Stashed changes
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-<<<<<<< Updated upstream
-import { ArrowLeft, Calculator, Activity, ChefHat, Play, Save, TrendingUp } from 'lucide-react';
-=======
-import { ArrowLeft, Calculator, Activity, ChefHat, Play, DollarSign, Users, Save } from 'lucide-react';
->>>>>>> Stashed changes
+import { ArrowLeft, Calculator, Activity, ChefHat, Play, DollarSign, Users, Save, TrendingUp, X } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Link } from 'wouter';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-<<<<<<< Updated upstream
 import { VisualHealthDashboard } from '@/components/VisualHealthDashboard';
-=======
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, query, where, orderBy } from 'firebase/firestore';
->>>>>>> Stashed changes
 
 interface PersonData {
   age: number;
@@ -40,9 +30,6 @@ interface PersonData {
 }
 
 export default function Customized() {
-<<<<<<< Updated upstream
-  // Removed personalized risk analysis redirect
-=======
   const { user } = useAuth();
   // Check if we should show personalized risk analysis
   const urlParams = new URLSearchParams(window.location.search);
@@ -50,7 +37,6 @@ export default function Customized() {
   const storedData = localStorage.getItem('lastScannedFood');
   const [showRiskAnalysis, setShowRiskAnalysis] = useState(fromGeneric && !!storedData);
   const [showMealPlanner, setShowMealPlanner] = useState(false);
->>>>>>> Stashed changes
   
   const [activeTab, setActiveTab] = useState('automatic');
   const [formData, setFormData] = useState<PersonData>({
@@ -83,14 +69,11 @@ export default function Customized() {
   const [customIngredients, setCustomIngredients] = useState('');
   const [customResults, setCustomResults] = useState<any>(null);
   const [customLoading, setCustomLoading] = useState(false);
-<<<<<<< Updated upstream
   const [savedMeals, setSavedMeals] = useState<any>({});
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [showHealthDashboard, setShowHealthDashboard] = useState(false);
-=======
   const [customDietType, setCustomDietType] = useState('Vegetarian');
   const [saveNotification, setSaveNotification] = useState<string>('');
->>>>>>> Stashed changes
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
@@ -651,7 +634,6 @@ export default function Customized() {
     }
   };
 
-<<<<<<< Updated upstream
   const saveMealComposition = () => {
     const today = new Date().toISOString().split('T')[0];
     const mealData = {
@@ -678,7 +660,8 @@ export default function Customized() {
     setShowHealthDashboard(true);
     
     setTimeout(() => setShowSaveSuccess(false), 3000);
-=======
+  };
+
   const saveMealPlan = async (recipes: any) => {
     if (!user) {
       setSaveNotification('Please login to save meal plans');
@@ -739,7 +722,6 @@ export default function Customized() {
     });
     
     return total;
->>>>>>> Stashed changes
   };
 
   return (
