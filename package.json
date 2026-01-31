@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"cd OCR && python test_ocr_simple.py\" \"vite\"",
+    "dev": "concurrently --kill-others \"./start_backend.sh\" \"vite --host\"",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backend": "./start_backend.sh",
+    "frontend": "vite --host"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -36,11 +38,11 @@
     "zustand": "^5.0.7"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^8.2.2",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
     "typescript": "5.6.3",

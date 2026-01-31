@@ -6,7 +6,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Camera, AlertTriangle, Shield, CheckCircle, XCircle, Settings, User } from 'lucide-react';
 import { useUserProfile } from '@/context/UserProfileContext';
 
-
 interface AllergenMatch {
   allergen: string;
   ingredient: string;

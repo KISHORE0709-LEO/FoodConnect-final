@@ -130,7 +130,7 @@ export default function GenericAnalysis() {
       const formData = new FormData();
       formData.append('image', selectedFile);
 
-      const response = await fetch('http://localhost:5002/api/generic/analyze', {
+      const response = await fetch('http://localhost:5005/analyze', {
         method: 'POST',
         body: formData,
       });
@@ -161,6 +161,9 @@ export default function GenericAnalysis() {
     }
   };
 
+  const handleCustomizeAnalysis = () => {
+    setLocation('/customized?from=generic');
+  };
   const getRiskColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
@@ -460,7 +463,6 @@ export default function GenericAnalysis() {
               })}
             </div>
           </div>
-
 
 
           {/* Customized Risk Report Button - Only show after successful analysis */}

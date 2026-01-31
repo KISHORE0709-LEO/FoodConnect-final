@@ -11,9 +11,12 @@ export default defineConfig({
     },
   },
   server: {
+    hmr: {
+      overlay: false
+    },
     proxy: {
       '/api': {
-        target: 'http://localhost:5002',
+        target: 'http://localhost:5004',
         changeOrigin: true,
         secure: false,
       }
