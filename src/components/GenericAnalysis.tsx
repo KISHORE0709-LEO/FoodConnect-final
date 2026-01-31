@@ -410,25 +410,167 @@ export default function GenericAnalysis() {
             </div>
           </div>
 
-          {/* Health Recommendations */}
+          {/* Health Impact Analysis */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Health Recommendations</h2>
-            <div className="space-y-2">
-              {(result.recommendations || []).map((rec, index) => {
-                const isWarning = rec.message?.includes('high') || rec.message?.includes('poor') || rec.message?.includes('concern');
-                return (
-                  <div key={index} className={`flex items-start space-x-3 p-3 rounded-lg ${
-                    isWarning ? 'bg-yellow-50 border-l-4 border-yellow-400' : 'bg-blue-50 border-l-4 border-blue-400'
-                  }`}>
-                    <span className={`text-sm font-medium ${
-                      isWarning ? 'text-yellow-800' : 'text-blue-800'
-                    }`}>⚠️</span>
-                    <span className={`text-sm ${
-                      isWarning ? 'text-yellow-800' : 'text-blue-800'
-                    }`}>{rec.message || rec}</span>
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+              <Heart className="w-6 h-6 text-red-500 mr-2" />
+              Health Impact Analysis
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Blood Sugar Impact */}
+              <div className="bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-lg border border-red-200">
+                <h3 className="font-semibold mb-4 text-red-800 flex items-center">
+                  <div className="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></div>
+                  Blood Sugar Impact
+                </h3>
+                <div className="relative h-20 mb-4">
+                  <svg className="w-full h-full" viewBox="0 0 200 50">
+                    <path
+                      d="M0,25 Q10,15 20,25 T40,25 T60,25 T80,25 T100,25 T120,25 T140,25 T160,25 T180,25 T200,25"
+                      stroke="#ef4444"
+                      strokeWidth="2"
+                      fill="none"
+                      className="animate-pulse"
+                    />
+                    <circle cx="50" cy="25" r="3" fill="#ef4444" className="animate-bounce" />
+                    <circle cx="100" cy="25" r="3" fill="#ef4444" className="animate-bounce" style={{animationDelay: '0.5s'}} />
+                    <circle cx="150" cy="25" r="3" fill="#ef4444" className="animate-bounce" style={{animationDelay: '1s'}} />
+                  </svg>
+                </div>
+                <div className="text-sm text-red-700">
+                  Sugar: {result.nutrition?.per100g?.total_sugar_g || 'N/A'}g
+                  <div className="w-full bg-red-200 rounded-full h-2 mt-2">
+                    <div 
+                      className="bg-red-500 h-2 rounded-full transition-all duration-1000 ease-out"
+                      style={{width: `${Math.min(100, (result.nutrition?.per100g?.total_sugar_g || 0) * 2)}%`}}
+                    ></div>
                   </div>
-                );
-              })}
+                </div>
+              </div>
+
+              {/* Heart Health */}
+              <div className="bg-gradient-to-br from-pink-50 to-red-50 p-6 rounded-lg border border-pink-200">
+                <h3 className="font-semibold mb-4 text-pink-800 flex items-center">
+                  <div className="w-3 h-3 bg-pink-500 rounded-full mr-2 animate-pulse"></div>
+                  Heart Health Impact
+                </h3>
+                <div className="relative h-20 mb-4">
+                  <svg className="w-full h-full" viewBox="0 0 200 50">
+                    <path
+                      d="M0,25 L10,25 L15,10 L20,40 L25,5 L30,45 L35,25 L200,25"
+                      stroke="#ec4899"
+                      strokeWidth="2"
+                      fill="none"
+                      className="animate-pulse"
+                    />
+                    <path
+                      d="M50,25 L55,25 L60,10 L65,40 L70,5 L75,45 L80,25"
+                      stroke="#ec4899"
+                      strokeWidth="2"
+                      fill="none"
+                      className="animate-pulse"
+                      style={{animationDelay: '0.3s'}}
+                    />
+                    <path
+                      d="M120,25 L125,25 L130,10 L135,40 L140,5 L145,45 L150,25"
+                      stroke="#ec4899"
+                      strokeWidth="2"
+                      fill="none"
+                      className="animate-pulse"
+                      style={{animationDelay: '0.6s'}}
+                    />
+                  </svg>
+                </div>
+                <div className="text-sm text-pink-700">
+                  Sodium: {result.nutrition?.per100g?.sodium_mg || 'N/A'}mg
+                  <div className="w-full bg-pink-200 rounded-full h-2 mt-2">
+                    <div 
+                      className="bg-pink-500 h-2 rounded-full transition-all duration-1000 ease-out"
+                      style={{width: `${Math.min(100, (result.nutrition?.per100g?.sodium_mg || 0) / 20)}%`}}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fat Impact */}
+              <div className="bg-gradient-to-br from-orange-50 to-yellow-50 p-6 rounded-lg border border-orange-200">
+                <h3 className="font-semibold mb-4 text-orange-800 flex items-center">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
+                  Fat Impact
+                </h3>
+                <div className="relative h-20 mb-4">
+                  <svg className="w-full h-full" viewBox="0 0 200 50">
+                    <defs>
+                      <linearGradient id="fatGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#f97316" />
+                        <stop offset="100%" stopColor="#eab308" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M0,35 Q50,15 100,25 T200,30"
+                      stroke="url(#fatGradient)"
+                      strokeWidth="3"
+                      fill="none"
+                      className="animate-pulse"
+                    />
+                    <circle cx="25" cy="30" r="2" fill="#f97316" className="animate-ping" />
+                    <circle cx="75" cy="20" r="2" fill="#f97316" className="animate-ping" style={{animationDelay: '0.5s'}} />
+                    <circle cx="125" cy="25" r="2" fill="#f97316" className="animate-ping" style={{animationDelay: '1s'}} />
+                    <circle cx="175" cy="30" r="2" fill="#f97316" className="animate-ping" style={{animationDelay: '1.5s'}} />
+                  </svg>
+                </div>
+                <div className="text-sm text-orange-700">
+                  Total Fat: {result.nutrition?.per100g?.total_fat_g || 'N/A'}g
+                  <div className="w-full bg-orange-200 rounded-full h-2 mt-2">
+                    <div 
+                      className="bg-orange-500 h-2 rounded-full transition-all duration-1000 ease-out"
+                      style={{width: `${Math.min(100, (result.nutrition?.per100g?.total_fat_g || 0) * 2)}%`}}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Overall Health Score */}
+              <div className="bg-gradient-to-br from-green-50 to-blue-50 p-6 rounded-lg border border-green-200">
+                <h3 className="font-semibold mb-4 text-green-800 flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                  Overall Health Score
+                </h3>
+                <div className="relative h-20 mb-4 flex items-center justify-center">
+                  <div className="relative w-16 h-16">
+                    <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 64 64">
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke="#e5e7eb"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke="#10b981"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 28}`}
+                        strokeDashoffset={`${2 * Math.PI * 28 * (1 - (result.nutrition?.healthScore || 0) / 100)}`}
+                        className="transition-all duration-2000 ease-out"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-bold text-green-600">
+                        {result.nutrition?.healthScore || 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-sm text-green-700 text-center">
+                  Safety Level: {result.nutrition?.safetyLevel || 'Unknown'}
+                </div>
+              </div>
             </div>
           </div>
 
