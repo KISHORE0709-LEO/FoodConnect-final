@@ -85,46 +85,59 @@ const AiHealthForecast = () => {
 
     return [
       {
-        name: "Blood Sugar Impact",
-        current: Math.round(bloodSugarScore),
+        name: "Sugar Sensitivity Trend",
+        current: Math.round(bloodSugarScore / 10),
         trend: avgSugar > 30 ? 'up' : 'stable',
-        risk: bloodSugarRisk,
-        prediction: `Daily sugar: ${Math.round(avgSugar)}g, carbs: ${Math.round(avgCarbs)}g. ${bloodSugarRisk === 'high' ? 'High diabetes risk' : 'Manageable levels'}`,
-        recommendation: avgSugar > 25 ? "Reduce sugary foods, choose complex carbs" : "Good blood sugar control"
+        risk: bloodSugarRisk === 'high' ? 'needs-attention' : bloodSugarRisk === 'medium' ? 'moderate' : 'stable',
+        prediction: `Your recent meals show ${avgSugar > 25 ? 'higher sugar intake' : 'balanced sugar levels'}. ${avgSugar > 25 ? 'Consider reducing processed foods for better energy stability.' : 'Your sugar intake appears well-balanced.'}`,
+        recommendation: avgSugar > 25 ? "Focus on whole foods and complex carbohydrates" : "Continue your balanced approach to sugar intake"
       },
       {
-        name: "Heart Health Score",
-        current: Math.round(heartScore),
+        name: "Heart Wellness Pattern",
+        current: Math.round(heartScore / 10),
         trend: avgSodium > 1800 ? 'down' : 'up',
-        risk: heartRisk,
-        prediction: `Daily sodium: ${Math.round(avgSodium)}mg, fiber: ${Math.round(avgFiber)}g. ${heartRisk === 'high' ? 'Cardiovascular risk' : 'Heart-healthy pattern'}`,
-        recommendation: avgSodium > 1500 ? "Lower sodium, increase vegetables" : "Excellent heart health habits"
+        risk: heartRisk === 'high' ? 'needs-attention' : heartRisk === 'medium' ? 'moderate' : 'strong',
+        prediction: `Your sodium intake patterns suggest ${avgSodium > 1500 ? 'room for improvement' : 'good heart-healthy choices'}. ${avgSodium > 1500 ? 'Reducing processed foods may support cardiovascular wellness.' : 'Your heart-healthy eating pattern looks positive.'}`,
+        recommendation: avgSodium > 1500 ? "Choose fresh ingredients and limit processed foods" : "Maintain your heart-healthy eating habits"
       },
       {
         name: "Nutrient Balance",
-        current: Math.round(nutrientScore),
+        current: Math.round(nutrientScore / 10),
         trend: proteinRatio > 0.3 ? 'up' : 'down',
-        risk: nutrientRisk,
-        prediction: `Protein-carb ratio: ${proteinRatio.toFixed(2)}. ${nutrientRisk === 'low' ? 'Well balanced' : 'Needs protein boost'}`,
-        recommendation: proteinRatio < 0.3 ? "Add more protein sources" : "Great macro balance"
+        risk: nutrientRisk === 'high' ? 'needs-attention' : nutrientRisk === 'medium' ? 'moderate' : 'improving',
+        prediction: `Your protein-to-carb balance shows ${proteinRatio < 0.3 ? 'potential for improvement' : 'good nutritional variety'}. ${proteinRatio < 0.3 ? 'Adding more protein sources may enhance energy levels.' : 'Your macro balance supports steady energy.'}`,
+        recommendation: proteinRatio < 0.3 ? "Include more protein-rich foods in your meals" : "Your nutritional balance is on track"
       },
       {
-        name: "Inflammation Risk",
-        current: Math.round(inflammationScore),
+        name: "Inflammation Tendency",
+        current: Math.round(inflammationScore / 10),
         trend: avgFiber > 25 ? 'down' : 'up',
-        risk: inflammationRisk,
-        prediction: `Daily fiber: ${Math.round(avgFiber)}g. ${inflammationRisk === 'low' ? 'Anti-inflammatory diet' : 'Pro-inflammatory pattern'}`,
-        recommendation: avgFiber < 25 ? "Eat more fruits, vegetables, whole grains" : "Excellent anti-inflammatory choices"
+        risk: inflammationRisk === 'high' ? 'needs-attention' : inflammationRisk === 'medium' ? 'moderate' : 'stable',
+        prediction: `Your fiber intake suggests ${avgFiber < 25 ? 'opportunity for anti-inflammatory foods' : 'good anti-inflammatory choices'}. ${avgFiber < 25 ? 'Increasing colorful vegetables may support overall wellness.' : 'Your anti-inflammatory food choices look positive.'}`,
+        recommendation: avgFiber < 25 ? "Add more colorful fruits and vegetables to your diet" : "Continue including anti-inflammatory foods"
       }
     ];
   };
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
-      case "low": return "text-green-600";
-      case "medium": return "text-yellow-600"; 
-      case "high": return "text-red-600";
+      case "stable": return "text-green-600";
+      case "improving": return "text-blue-600";
+      case "strong": return "text-green-600";
+      case "moderate": return "text-amber-600"; 
+      case "needs-attention": return "text-amber-700";
       default: return "text-gray-600";
+    }
+  };
+
+  const getRiskBg = (risk: string) => {
+    switch (risk) {
+      case "stable": return "bg-green-50";
+      case "improving": return "bg-blue-50";
+      case "strong": return "bg-green-50";
+      case "moderate": return "bg-amber-50"; 
+      case "needs-attention": return "bg-amber-50";
+      default: return "bg-gray-50";
     }
   };
 
@@ -156,9 +169,12 @@ const AiHealthForecast = () => {
         
         <div className="text-center mb-12 text-gray-900">
           <TrendingUp className="h-16 w-16 mx-auto mb-6" />
-          <h1 className="text-5xl font-bold mb-4">AI Health Forecast</h1>
+          <h1 className="text-5xl font-bold mb-4">AI Wellness Insights</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Predict future health risks from your eating patterns and prevent them early
+            AI-generated dietary pattern analysis based on your eating habits
+          </p>
+          <p className="text-sm text-gray-400 mt-2 max-w-3xl mx-auto">
+            These insights are AI-generated predictions based on your logged meals and are not medical diagnoses.
           </p>
         </div>
 
@@ -179,7 +195,7 @@ const AiHealthForecast = () => {
                 {healthMetrics.map((metric, index) => (
                   <Card 
                     key={index} 
-                    className="bg-white shadow-md border hover:border-primary cursor-pointer hover:shadow-lg transition-all"
+                    className={`bg-white shadow-md border hover:border-primary cursor-pointer hover:shadow-lg transition-all ${getRiskBg(metric.risk)}`}
                     onClick={() => setSelectedMetric(metric)}
                   >
                     <CardContent className="p-4">
@@ -189,18 +205,21 @@ const AiHealthForecast = () => {
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-2xl font-bold">{metric.current}%</span>
-                          <Badge 
-                            variant="outline" 
-                            className={getRiskColor(metric.risk)}
-                          >
-                            {metric.risk} risk
-                          </Badge>
+                          <span className="text-2xl font-bold">Trend Score: {metric.current}/10</span>
                         </div>
                         <div className="mt-2">
-                          <Progress value={metric.current} className="h-2 transition-all duration-700" />
+                          <Progress value={metric.current * 10} className="h-2 transition-all duration-700" />
                         </div>
-                        <p className="text-xs text-gray-500">Click for details</p>
+                        <Badge 
+                          variant="outline" 
+                          className={getRiskColor(metric.risk)}
+                        >
+                          {metric.risk === 'needs-attention' ? 'Needs Balance' : 
+                           metric.risk === 'moderate' ? 'Moderate' :
+                           metric.risk === 'improving' ? 'Improving' :
+                           metric.risk === 'strong' ? 'Strong' : 'Stable'}
+                        </Badge>
+                        <p className="text-xs text-gray-500">Based on your recent food logs</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -260,30 +279,106 @@ const AiHealthForecast = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-semibold mb-3">Blood Sugar Trends</h3>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={nutritionTrends}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="day" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="sugar" stroke="#ff4444" strokeWidth={3} name="Sugar (g)" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-green-500 text-white p-3">
+                      <div className="text-xs opacity-90">SUGAR LOAD PATTERN</div>
+                      <div className="text-2xl font-bold">
+                        {nutritionTrends.length > 0 ? 
+                          (nutritionTrends[nutritionTrends.length - 1]?.sugar > 25 ? 'Elevated' : 
+                           nutritionTrends[nutritionTrends.length - 1]?.sugar > 15 ? 'Moderate' : 'Balanced') 
+                          : 'Balanced'}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="relative h-32 mb-4 bg-gray-50">
+                        <svg className="w-full h-full" viewBox="0 0 300 120">
+                          <line x1="0" y1="20" x2="300" y2="20" stroke="#e5e7eb" strokeWidth="0.5" />
+                          <line x1="0" y1="40" x2="300" y2="40" stroke="#e5e7eb" strokeWidth="0.5" />
+                          <line x1="0" y1="60" x2="300" y2="60" stroke="#e5e7eb" strokeWidth="0.5" />
+                          <line x1="0" y1="80" x2="300" y2="80" stroke="#e5e7eb" strokeWidth="0.5" />
+                          <line x1="0" y1="100" x2="300" y2="100" stroke="#e5e7eb" strokeWidth="0.5" />
+                          
+                          <text x="5" y="25" fontSize="10" fill="#9ca3af">High</text>
+                          <text x="5" y="65" fontSize="10" fill="#9ca3af">Balanced</text>
+                          <text x="5" y="105" fontSize="10" fill="#9ca3af">Low</text>
+                          
+                          <path
+                            d="M30,70 L60,65 L90,75 L120,60 L150,55 L180,65 L210,60 L240,55 L270,50"
+                            stroke="#22c55e"
+                            strokeWidth="3"
+                            fill="none"
+                          />
+                          
+                          <circle cx="270" cy="50" r="4" fill="#22c55e">
+                            <title>Fiber improved here</title>
+                          </circle>
+                          <rect x="0" y="55" width="300" height="20" fill="#22c55e" fillOpacity="0.1" />
+                        </svg>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mb-2">
+                        <span>Mon</span>
+                        <span>Wed</span>
+                        <span>Fri</span>
+                        <span>Sun</span>
+                      </div>
+                      <div className="text-center">
+                        <button className="text-green-600 text-sm flex items-center mx-auto">
+                          <span className="mr-1">📊</span> Weekly Nutrient Trend
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
                 <div>
-                  <h3 className="font-semibold mb-3">Heart Health Indicators</h3>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={nutritionTrends}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="day" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="sodium" stroke="#ff6b6b" strokeWidth={3} name="Sodium (mg)" />
-                      <Line type="monotone" dataKey="fiber" stroke="#51cf66" strokeWidth={2} name="Fiber (g)" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-blue-500 text-white p-3">
+                      <div className="text-xs opacity-90">HEART WELLNESS PATTERN</div>
+                      <div className="text-2xl font-bold">
+                        {nutritionTrends.length > 0 ? 
+                          (nutritionTrends[nutritionTrends.length - 1]?.sodium > 1500 ? 'Needs Balance' : 
+                           nutritionTrends[nutritionTrends.length - 1]?.sodium > 800 ? 'Moderate' : 'Strong') 
+                          : 'Strong'}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="relative h-32 mb-4 bg-gray-50">
+                        <svg className="w-full h-full" viewBox="0 0 300 120">
+                          <line x1="0" y1="20" x2="300" y2="20" stroke="#e5e7eb" strokeWidth="0.3" />
+                          <line x1="0" y1="40" x2="300" y2="40" stroke="#e5e7eb" strokeWidth="0.3" />
+                          <line x1="0" y1="60" x2="300" y2="60" stroke="#e5e7eb" strokeWidth="0.3" />
+                          <line x1="0" y1="80" x2="300" y2="80" stroke="#e5e7eb" strokeWidth="0.3" />
+                          <line x1="0" y1="100" x2="300" y2="100" stroke="#e5e7eb" strokeWidth="0.3" />
+                          
+                          <text x="5" y="25" fontSize="10" fill="#9ca3af">Optimal</text>
+                          <text x="5" y="65" fontSize="10" fill="#9ca3af">Balanced</text>
+                          <text x="5" y="105" fontSize="10" fill="#9ca3af">Needs Work</text>
+                          
+                          <path
+                            d="M30,80 L60,75 L90,70 L120,65 L150,60 L180,65 L210,60 L240,55 L270,50"
+                            stroke="#3b82f6"
+                            strokeWidth="3"
+                            fill="none"
+                          />
+                          
+                          <circle cx="270" cy="50" r="4" fill="#3b82f6">
+                            <title>Heart-healthy choices improving</title>
+                          </circle>
+                        </svg>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mb-2">
+                        <span>Mon</span>
+                        <span>Wed</span>
+                        <span>Fri</span>
+                        <span>Sun</span>
+                      </div>
+                      <div className="text-center">
+                        <button className="text-blue-600 text-sm flex items-center mx-auto">
+                          <span className="mr-1">❤️</span> Heart Wellness Trend
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>

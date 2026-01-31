@@ -104,99 +104,28 @@ export default function About() {
           </div>
 
           {/* How It Works */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">How It Works</h2>
-            <div className="space-y-8">
-              {workflow.map((item, index) => (
-                <div key={index} className="flex items-start space-x-6">
-                  <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                    {item.step}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h3>
-                    <p className="text-gray-600">{item.description}</p>
-                  </div>
-                </div>
-              ))}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">How It Works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-6 border rounded-lg">
+                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-4">1</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Scan</h3>
+                <p className="text-gray-600">Take a photo of food packaging</p>
+              </div>
+              <div className="text-center p-6 border rounded-lg">
+                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-4">2</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Analyze</h3>
+                <p className="text-gray-600">AI reads ingredients and nutrition</p>
+              </div>
+              <div className="text-center p-6 border rounded-lg">
+                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-4">3</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Get Insights</h3>
+                <p className="text-gray-600">Receive personalized recommendations</p>
+              </div>
             </div>
           </div>
 
-          {/* Technology Stack */}
-          <Card className="mb-12">
-            <CardHeader>
-              <CardTitle className="text-2xl text-center">Technology Stack</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Frontend</h3>
-                  <ul className="space-y-2 text-gray-600">
-                    <li>• React 18 with TypeScript</li>
-                    <li>• Tailwind CSS + shadcn/ui</li>
-                    <li>• Wouter for routing</li>
-                    <li>• TanStack Query</li>
-                    <li>• Framer Motion</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Backend</h3>
-                  <ul className="space-y-2 text-gray-600">
-                    <li>• Node.js + Express.js</li>
-                    <li>• Firebase (Auth + Firestore)</li>
-                    <li>• Tesseract.js for OCR</li>
-                    <li>• Sharp for image processing</li>
-                    <li>• WebSocket for real-time updates</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Machine Learning</h3>
-                  <ul className="space-y-2 text-gray-600">
-                    <li>• Python 3.8+</li>
-                    <li>• TensorFlow/Keras</li>
-                    <li>• Scikit-learn</li>
-                    <li>• XGBoost</li>
-                    <li>• OpenCV for image processing</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Research Impact */}
-          <Card className="bg-gradient-to-r from-purple-50 to-blue-50">
-            <CardContent className="p-8">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">Research Impact</h2>
-                <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-                  This project serves as a comprehensive machine learning research study on intelligent food safety assessment, 
-                  contributing to the advancement of AI applications in public health and consumer safety.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div>
-                  <div className="flex justify-center mb-4">
-                    <Users className="text-blue-600" size={48} />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Consumer Empowerment</h3>
-                  <p className="text-gray-600">Helping consumers make informed food choices</p>
-                </div>
-                <div>
-                  <div className="flex justify-center mb-4">
-                    <Shield className="text-green-600" size={48} />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Food Safety</h3>
-                  <p className="text-gray-600">Promoting food safety compliance and awareness</p>
-                </div>
-                <div>
-                  <div className="flex justify-center mb-4">
-                    <Award className="text-purple-600" size={48} />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">AI Innovation</h3>
-                  <p className="text-gray-600">Advancing AI applications in healthcare and nutrition</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
